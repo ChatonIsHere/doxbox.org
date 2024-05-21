@@ -1,16 +1,27 @@
 import { createApp } from 'vue';
+import { VueFire, VueFireAuth } from 'vuefire';
 import App from './App.vue';
-import router from './routes/index';
-import store from './store';
-
-createApp(App).use(router).use(store).mount('#app');
-
-// Import our custom CSS
-import './scss/styles.scss';
-
-// Import all of Bootstrap's JS
+import router from './router';
+import { app as firebaseApp } from './firebase';
 import * as bootstrap from 'bootstrap';
+import Particles from '@tsparticles/vue3';
+import { loadSlim } from '@tsparticles/slim';
 
-particlesJS.load('particles', '/src/assets/particlesjs-config.json', function () {
-    console.log('callback - particles.js config loaded');
+import './assets/main.scss';
+
+const app = createApp(App);
+
+app.use(router);
+
+app.use(VueFire, {
+  firebaseApp,
+  modules: [VueFireAuth()],
 });
+
+app.use(Particles, {
+  init: async (engine) => {
+    await loadSlim(engine);
+  },
+});
+
+app.mount('#app');

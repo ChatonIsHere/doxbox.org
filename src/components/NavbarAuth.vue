@@ -1,46 +1,41 @@
-<template>
-    <button v-if="user.loggedIn" @click.prevent="signOut" class="btn btn-secondary">Log Out</button>
-    <button v-else @click.prevent="LoginGoogle()" class="btn btn-secondary">Sign in with Google</button>
-</template>
-
 <script>
-import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
-import { computed } from 'vue';
-import { auth } from '../firebaseConfig';
-import { ref } from 'vue';
-
-export default {
-    name: 'NavbarAuthComponent',
-
-    setup() {
-        const store = useStore();
-        const router = useRouter();
-        const error = ref(null);
-
-        auth.onAuthStateChanged((user) => {
-            store.dispatch('fetchUser', user);
-        });
-
-        const user = computed(() => {
-            return store.getters.user;
-        });
-
-        const signOut = async () => {
-            await store.dispatch('logOut');
-            router.push('/');
-        };
-
-        const LoginGoogle = async () => {
-            try {
-                await store.dispatch('logInGoogle');
-                router.push('/');
-            } catch (err) {
-                error.value = err.message;
-            }
-        };
-
-        return { user, signOut, LoginGoogle, error };
-    },
-};
+  import { GoogleAuthProvider } from 'firebase/auth';
+  export const googleAuthProvider = new GoogleAuthProvider();
 </script>
+
+<script setup>
+  import { signInWithPopup, signOut } from 'firebase/auth';
+  import { useCurrentUser, useFirebaseAuth } from 'vuefire';
+  import { useRouter } from 'vue-router';
+
+  const auth = useFirebaseAuth();
+  const user = useCurrentUser();
+  const router = useRouter();
+
+  const signinPopup = () => {
+    signInWithPopup(auth, googleAuthProvider)
+      .then(() => {
+        router.push('/');
+      })
+      .catch((error) => {
+        if (error.code === 'auth/admin-restricted-operation') console.log(`${error.customData.email} is not authorised`);
+        else console.error(error);
+      });
+  };
+
+  const signOutButton = () => {
+    signOut(auth)
+      .then(() => {
+        router.push('/');
+      })
+      .catch((error) => {
+        console.error(error);
+        router.push('/');
+      });
+  };
+</script>
+
+<template>
+  <button v-if="user" @click.prevent="signOutButton()" class="btn btn-secondary">Log Out</button>
+  <button v-else @click.prevent="signinPopup()" class="btn btn-secondary">Sign in with google</button>
+</template>
