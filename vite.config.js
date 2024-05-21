@@ -12,6 +12,5 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '~bootstrap': resolve(__dirname, 'node_modules/bootstrap'),
     },
-    base: 'https://chatonishere.github.io/',
   },
 });

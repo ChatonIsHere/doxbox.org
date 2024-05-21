@@ -7,7 +7,7 @@
 <template>
   <div class="col mt-4">
     <div class="card bg-dark text-light">
-      <img class="card-img-top" :src="'src/assets/images/gameservers/' + gameserver.preview" alt="Card image cap" />
+      <img class="card-img-top" :src="gameserver.preview" alt="Card image cap" />
       <div class="card-body d-grid">
         <h3 class="card-title">{{ gameserver.name }}</h3>
         <div id="badges" class="mb-4 mt-1">
