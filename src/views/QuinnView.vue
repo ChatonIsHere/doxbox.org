@@ -1,9 +1,7 @@
 <script setup>
-  import { computed } from 'vue';
-  import { useDatabase, useDatabaseList, useDatabaseObject, useCurrentUser } from 'vuefire';
+  import { useDatabase, useDatabaseList, useDatabaseObject } from 'vuefire';
   import { ref as dbRef } from 'firebase/database';
 
-  const user = useCurrentUser();
   const db = useDatabase();
 
   const usernames = useDatabaseObject(dbRef(db, 'quinn/userData/username'));
@@ -18,18 +16,20 @@
 
 <template>
   <div class="px-4 py-5 text-center col-lg-4 mx-auto">
-    <h1 class="display-5 fw-bold text-white pb-4">Average d20 Rolls for Quinn users</h1>
+    <h1 class="display-6 fw-bold text-white pb-4">Dice rolling statistics from Quinn</h1>
     <table class="table table-dark">
       <thead>
         <tr>
-          <th scope="col">User ID</th>
-          <th scope="col">Average d20 Roll</th>
+          <th scope="col" class="align-middle">User ID</th>
+          <th scope="col" class="align-middle">Average d20 Roll</th>
+          <th scope="col" class="align-middle">d20 Sample Size</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="player in players">
-          <td>{{ discordUsername(player.id) }}</td>
-          <td>{{ (player.sum / player.count).toFixed(2) }}</td>
+          <td class="align-middle">{{ discordUsername(player.id) }}</td>
+          <td class="align-middle">{{ (player.sum / player.count).toFixed(2) }}</td>
+          <td class="align-middle">{{ player.count }}</td>
         </tr>
       </tbody>
     </table>
