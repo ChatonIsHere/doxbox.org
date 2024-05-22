@@ -1,13 +1,9 @@
 <script setup>
   import NavbarAuth from './NavbarAuth.vue';
-  import { useDatabase, useDatabaseList, useCurrentUser } from 'vuefire';
-  import { ref as dbRef, query, orderByChild } from 'firebase/database';
+  import NavbarEntries from './NavbarEntries.vue';
+  import { useCurrentUser } from 'vuefire';
 
-  const db = useDatabase();
   const user = useCurrentUser();
-
-  const navInternal = useDatabaseList(query(dbRef(db, 'navigation/internal'), orderByChild('order')));
-  const navExternal = useDatabaseList(query(dbRef(db, 'navigation/external'), orderByChild('order')));
 </script>
 
 <template>
@@ -18,16 +14,7 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse me-auto" id="navbarNav">
-        <ul v-if="user" class="navbar-nav">
-          <div class="mx-2 vr align-middle"></div>
-          <li v-for="navnode in navInternal" :key="navnode.id" class="nav-item">
-            <router-link :to="navnode.route" class="nav-link">{{ navnode.name }}</router-link>
-          </li>
-          <div class="mx-2 vr align-middle"></div>
-          <li v-for="navnode in navExternal" :key="navnode.id" class="nav-item">
-            <a :href="navnode.url" class="nav-link">{{ navnode.name }}</a>
-          </li>
-        </ul>
+        <NavbarEntries v-if="user" />
         <NavbarAuth class="ms-auto"></NavbarAuth>
       </div>
     </div>
