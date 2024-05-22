@@ -13,4 +13,5 @@ export default defineConfig({
       '~bootstrap': resolve(__dirname, 'node_modules/bootstrap'),
     },
   },
+  base: '/doxbox.org/',
 });
