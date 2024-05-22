@@ -10,7 +10,7 @@
       <img class="card-img-top" :src="gameserver.preview" alt="Card image cap" />
       <div class="card-body d-grid">
         <h3 class="card-title">{{ gameserver.name }}</h3>
-        <div id="badges" class="mb-4 mt-1">
+        <div id="badges" class="mb-4 mt-1 text-capitalize">
           <span v-if="gameserver.status === 'running'" class="badge badge-pill bg-success mx-1">{{ gameserver.status }}</span>
           <span v-else-if="gameserver.status === 'starting'" class="badge badge-pill text-dark bg-warning mx-1">{{ gameserver.status }}</span>
           <span v-else-if="gameserver.status === 'offline'" class="badge badge-pill bg-danger mx-1">{{ gameserver.status }}</span>
