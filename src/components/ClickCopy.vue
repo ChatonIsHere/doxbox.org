@@ -11,7 +11,7 @@
 
 <template>
   <button class="input-group-text btn-block text-center text-wrap" v-on:click="copy(content)">
-    <code>{{ content }}</code>
+    <code class="text-center px-2">{{ content }}</code>
     <img src="../assets/icons/copy.svg" class="ms-auto" alt="Copy icon" />
   </button>
 </template>
