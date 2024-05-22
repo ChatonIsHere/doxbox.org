@@ -11,7 +11,7 @@
 
 <template>
   <div class="px-4 py-5 text-center">
-    <h1 class="display-5 fw-bold text-white" v-if="user">Dox Box Gameservers</h1>
+    <h1 class="display-6 fw-bold text-white" v-if="user">Gameservers</h1>
   </div>
   <div class="container-fluid mb-4">
     <div class="row justify-content-center row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
