@@ -1,11 +1,11 @@
 <script setup>
   import { useDatabase, useDatabaseList } from 'vuefire';
-  import { ref as dbRef } from 'firebase/database';
+  import { ref as dbRef, query, orderByChild } from 'firebase/database';
 
   const db = useDatabase();
 
-  const navInternal = useDatabaseList(dbRef(db, 'navigation/internal'));
-  const navExternal = useDatabaseList(dbRef(db, 'navigation/external'));
+  const navInternal = useDatabaseList(query(dbRef(db, 'navigation/internal'), orderByChild('order')));
+  const navExternal = useDatabaseList(query(dbRef(db, 'navigation/external'), orderByChild('order')));
 </script>
 
 <template>
