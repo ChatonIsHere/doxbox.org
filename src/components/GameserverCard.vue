@@ -22,6 +22,10 @@
         </div>
         <p class="card-text">{{ gameserver.description }}</p>
         <!-- <a :href="gameserver.link" class="btn btn-primary mb-2">Random URL</a> -->
+        <ul class="list-group">
+          <a v-if="gameserver.resources.primary.name" class="list-group-item bg-dark text-light" :href="gameserver.resources.primary.url">{{ gameserver.resources.primary.name }}</a>
+          <a v-if="gameserver.resources.secondary.name" class="list-group-item bg-dark text-light" :href="gameserver.resources.secondary.url">{{ gameserver.resources.secondary.name }}</a>
+        </ul>
         <h5 v-if="gameserver.address" class="mt-2">Connection address</h5>
         <ClickCopy v-if="gameserver.address" :content="gameserver.address" />
         <h5 v-if="gameserver.password && gameserver.password != 'whitelist'" class="mt-2">Password</h5>
