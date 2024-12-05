@@ -14,14 +14,14 @@ const app = createApp(App);
 app.use(router);
 
 app.use(VueFire, {
-  firebaseApp,
-  modules: [VueFireAuth()],
+    firebaseApp,
+    modules: [VueFireAuth()],
 });
 
 app.use(Particles, {
-  init: async (engine) => {
-    await loadSlim(engine);
-  },
+    init: async (engine) => {
+        await loadSlim(engine);
+    },
 });
 
 app.mount('#app');

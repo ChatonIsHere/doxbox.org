@@ -1,27 +1,27 @@
 {
-  "name": "-",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "deploy": "yarn build && firebase deploy"
-  },
-  "dependencies": {
-    "@popperjs/core": "^2.11.8",
-    "@tsparticles/slim": "^3.4.0",
-    "@tsparticles/vue3": "^3.0.1",
-    "bootstrap": "^5.3.3",
-    "firebase": "^10.12.0",
-    "vue": "^3.4.21",
-    "vue-router": "^4.3.0",
-    "vuefire": "^3.1.23"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.4",
-    "sass": "^1.77.1",
-    "vite": "^5.2.8"
-  }
+    "name": "-",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "deploy": "yarn build && firebase deploy"
+    },
+    "dependencies": {
+        "@popperjs/core": "^2.11.8",
+        "@tsparticles/slim": "^3.4.0",
+        "@tsparticles/vue3": "^3.0.1",
+        "bootstrap": "^5.3.3",
+        "firebase": "^10.12.0",
+        "vue": "^3.4.21",
+        "vue-router": "^4.3.0",
+        "vuefire": "^3.1.23"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-vue": "^5.0.4",
+        "sass": "^1.77.1",
+        "vite": "^5.2.8"
+    }
 }
