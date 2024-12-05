@@ -5,17 +5,27 @@
 
 <script setup>
     import { signInWithPopup, signOut } from 'firebase/auth';
-    import { useCurrentUser, useFirebaseAuth } from 'vuefire';
+    import { ref as dbRef, update } from 'firebase/database';
+    import { useCurrentUser, useFirebaseAuth, useDatabase } from 'vuefire';
     import { useRouter } from 'vue-router';
 
     const auth = useFirebaseAuth();
     const user = useCurrentUser();
+    const db = useDatabase();
     const router = useRouter();
 
     const signinPopup = () => {
         signInWithPopup(auth, googleAuthProvider)
-            .then(() => {
+            .then((result) => {
                 router.push('/');
+                update(dbRef(db, `users/${result.user.uid}/`), {
+                    availability: {
+                        thunday: ':3',
+                    },
+                    displayName: result.user.displayName,
+                    email: result.user.email,
+                    lastLogon: Date(),
+                });
             })
             .catch((error) => {
                 if (error.code === 'auth/admin-restricted-operation') console.log(`${error.customData.email} is not authorised`);
