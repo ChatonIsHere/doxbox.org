@@ -10,64 +10,106 @@
 
     const availableMonday = computed({
         get() {
-            return typeof availability.value != 'undefined' ? availability.value.monday : false;
+            let available = false;
+
+            try {
+                available = availability.value[0];
+            } catch (err) {}
+
+            return available;
         },
         set(value) {
-            update(dbRef(db, `users/${user.value.uid}/availability`), { monday: value });
+            update(dbRef(db, `users/${user.value.uid}/availability`), { 0: value });
         },
     });
 
     const availableTuesday = computed({
         get() {
-            return typeof availability.value != 'undefined' ? availability.value.tuesday : false;
+            let available = false;
+
+            try {
+                available = availability.value[1];
+            } catch (err) {}
+
+            return available;
         },
         set(value) {
-            update(dbRef(db, `users/${user.value.uid}/availability`), { tuesday: value });
+            update(dbRef(db, `users/${user.value.uid}/availability`), { 1: value });
         },
     });
 
     const availableWednesday = computed({
         get() {
-            return typeof availability.value != 'undefined' ? availability.value.wednesday : false;
+            let available = false;
+
+            try {
+                available = availability.value[2];
+            } catch (err) {}
+
+            return available;
         },
         set(value) {
-            update(dbRef(db, `users/${user.value.uid}/availability`), { wednesday: value });
+            update(dbRef(db, `users/${user.value.uid}/availability`), { 2: value });
         },
     });
 
     const availableThursday = computed({
         get() {
-            return typeof availability.value != 'undefined' ? availability.value.thursday : false;
+            let available = false;
+
+            try {
+                available = availability.value[3];
+            } catch (err) {}
+
+            return available;
         },
         set(value) {
-            update(dbRef(db, `users/${user.value.uid}/availability`), { thursday: value });
+            update(dbRef(db, `users/${user.value.uid}/availability`), { 3: value });
         },
     });
 
     const availableFriday = computed({
         get() {
-            return typeof availability.value != 'undefined' ? availability.value.friday : false;
+            let available = false;
+
+            try {
+                available = availability.value[4];
+            } catch (err) {}
+
+            return available;
         },
         set(value) {
-            update(dbRef(db, `users/${user.value.uid}/availability`), { friday: value });
+            update(dbRef(db, `users/${user.value.uid}/availability`), { 4: value });
         },
     });
 
     const availableSaturday = computed({
         get() {
-            return typeof availability.value != 'undefined' ? availability.value.saturday : false;
+            let available = false;
+
+            try {
+                available = availability.value[5];
+            } catch (err) {}
+
+            return available;
         },
         set(value) {
-            update(dbRef(db, `users/${user.value.uid}/availability`), { saturday: value });
+            update(dbRef(db, `users/${user.value.uid}/availability`), { 5: value });
         },
     });
 
     const availableSunday = computed({
         get() {
-            return typeof availability.value != 'undefined' ? availability.value.sunday : false;
+            let available = false;
+
+            try {
+                available = availability.value[6];
+            } catch (err) {}
+
+            return available;
         },
         set(value) {
-            update(dbRef(db, `users/${user.value.uid}/availability`), { sunday: value });
+            update(dbRef(db, `users/${user.value.uid}/availability`), { 6: value });
         },
     });
 </script>

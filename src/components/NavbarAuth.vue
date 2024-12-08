@@ -19,9 +19,6 @@
             .then((result) => {
                 router.push('/');
                 update(dbRef(db, `users/${result.user.uid}/`), {
-                    availability: {
-                        thunday: ':3',
-                    },
                     displayName: result.user.displayName,
                     email: result.user.email,
                     lastLogon: Date(),
