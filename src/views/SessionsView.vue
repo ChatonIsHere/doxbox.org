@@ -5,12 +5,14 @@
 
     import WeeklyAvailability from '../components/WeeklyAvailability.vue';
     import SessionDayDropdown from '../components/SessionDayDropdown.vue';
+    import UpcomingSessions from '../components/UpcomingSessions.vue';
     import SessionsCalendar from '../components/SessionsCalendar.vue';
 
     const db = useDatabase();
     const user = useCurrentUser();
 
     const userExtended = useDatabaseObject(dbRef(db, `users/${user.value.uid}/`));
+    const campaigns = useDatabaseObject(dbRef(db, `quinn/campaigns/`));
 
     const userHasDiscordLinked = computed(() => {
         try {
@@ -42,11 +44,9 @@
             Your user ID is: <code>{{ getUserID }}</code>
         </p>
     </div>
-    <div v-else class="container">
+    <div v-else class="container-fluid">
         <div class="row">
             <div class="col">
-                <h4 class="fw-bold text-white pb-4">Typical Weekly Availability</h4>
-                <WeeklyAvailability />
                 <div>
                     <h4 class="fw-bold text-white pb-2">Typical Weekly Availability</h4>
                     <WeeklyAvailability />
@@ -56,6 +56,9 @@
                     <SessionDayDropdown :campaign="dmsCampaign" />
                 </div>
             </div>
+            <div class="col col-4 mx-5">
+                <h4 class="fw-bold text-white pb-2">Upcoming Sessions</h4>
+                <UpcomingSessions />
             </div>
             <div class="col">
                 <h4 class="fw-bold text-white pb-4">Session Calendar</h4>
