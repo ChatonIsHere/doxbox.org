@@ -4,6 +4,7 @@
     import { ref as dbRef, update } from 'firebase/database';
 
     import WeeklyAvailability from '../components/WeeklyAvailability.vue';
+    import SessionDayDropdown from '../components/SessionDayDropdown.vue';
     import SessionsCalendar from '../components/SessionsCalendar.vue';
 
     const db = useDatabase();
@@ -22,6 +23,16 @@
     const getUserID = computed(() => {
         return user.value.uid;
     });
+
+    const dmsCampaign = computed(() => (Object.values(campaigns.value).filter((campaign) => campaign.dm == userExtended.value.discordID).length > 0 ? Object.values(campaigns.value).find((campaign) => campaign.dm == userExtended.value.discordID) : false));
+
+    const dmsCampaignAvailable = computed(() => {
+        try {
+            return typeof dmsCampaign.value.name === 'string';
+        } catch (err) {
+            return false;
+        }
+    });
 </script>
 
 <template>
@@ -36,6 +47,15 @@
             <div class="col">
                 <h4 class="fw-bold text-white pb-4">Typical Weekly Availability</h4>
                 <WeeklyAvailability />
+                <div>
+                    <h4 class="fw-bold text-white pb-2">Typical Weekly Availability</h4>
+                    <WeeklyAvailability />
+                </div>
+                <div v-if="dmsCampaignAvailable" class="w-50 mx-auto pt-4">
+                    <h4 class="fw-bold text-white pb-2">{{ dmsCampaign.name }} Main Session</h4>
+                    <SessionDayDropdown :campaign="dmsCampaign" />
+                </div>
+            </div>
             </div>
             <div class="col">
                 <h4 class="fw-bold text-white pb-4">Session Calendar</h4>
