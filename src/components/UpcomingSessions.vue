@@ -1,7 +1,7 @@
 <script setup>
-    import { computed, ref } from 'vue';
+    import { computed } from 'vue';
     import { useDatabase, useDatabaseObject, useCurrentUser } from 'vuefire';
-    import { ref as dbRef } from 'firebase/database';
+    import { ref as dbRef, update } from 'firebase/database';
 
     const db = useDatabase();
     const user = useCurrentUser();
@@ -17,7 +17,17 @@
 
     const sortSessions = (sessions) => {
         try {
-            return Object.values(sessions).sort((a, b) => new Date(a.date) - new Date(b.date));
+            let modifiedSessionsArray = [];
+
+            Object.entries(sessions).forEach((session) => {
+                modifiedSessionsArray.push({
+                    id: session[0],
+                    campaign: session[1].campaign,
+                    date: session[1].date,
+                });
+            });
+
+            return modifiedSessionsArray;
         } catch (err) {
             return [];
         }
@@ -34,6 +44,15 @@
 
         return `${campaign.name} on ${dateString}`;
     };
+
+    const dmsCampaign = computed(() => {
+        if (typeof campaigns.value !== 'undefined' && typeof userExtended.value !== 'undefined') return campaigns.value[userExtended.value.dmCampaign];
+        else return false;
+    });
+
+    const cancelSession = (sessionID) => {
+        if (sessionID !== '') update(dbRef(db, `sessions/upcoming/`), { [sessionID]: null });
+    };
 </script>
 
 <template>
@@ -44,9 +63,7 @@
             </h2>
             <div :id="`accordion-${session.date}-${session.campaign}`" class="accordion-collapse collapse" data-bs-parent="#sessionsAccordion">
                 <div class="accordion-body">
-                    <a class="btn btn-primary btn-info m-2" :href="campaignFromID(session.campaign).details.url">Campaign</a>
-                    <a class="btn btn-primary btn-success m-2" :href="campaignFromID(session.campaign).details.map">Battlemap</a>
-                    <p v-if="campaignFromID(session.campaign).details.date !== '0001-01-01'">In-universe date: {{ campaignFromID(session.campaign).details.date }}</p>
+                    <a class="btn btn-danger btn-info m-2" v-if="dmsCampaign.id == session.campaign" v-on:click="cancelSession(session.id)">Cancel Session</a>
                 </div>
             </div>
         </div>
