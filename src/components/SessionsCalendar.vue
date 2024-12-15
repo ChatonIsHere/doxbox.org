@@ -139,9 +139,9 @@
         <template #footer>
             <div class="btn-group w-full px-3 pb-3">
                 <button class="btn btn-sm btn-dark" v-on:click="viewThisMonth('datePicker')">This Month</button>
-                <button class="btn btn-sm btn-danger" v-on:click="toggleSessionScheduleDialog">Cancel</button>
+                <button class="btn btn-sm btn-danger" v-on:click="toggleSessionScheduleDialog">Cancel New Session</button>
             </div>
-            <div>
+            <div class="pb-2">
                 <button class="btn btn-sm btn-secondary btn-block" v-if="selectedDate == 'Please select a date'">{{ displaySelectedDate }}</button>
                 <button class="btn btn-sm btn-success btn-block" v-else v-on:click="scheduleNewSession()">{{ displaySelectedDate }}</button>
             </div>
