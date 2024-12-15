@@ -6,17 +6,17 @@
     const db = useDatabase();
     const user = useCurrentUser();
 
-    const availability = useDatabaseObject(dbRef(db, `users/${user.value.uid}/availability`));
+    const availabilityMonday = useDatabaseObject(dbRef(db, `users/${user.value.uid}/availability/0`));
+    const availabilityTuesday = useDatabaseObject(dbRef(db, `users/${user.value.uid}/availability/1`));
+    const availabilityWednesday = useDatabaseObject(dbRef(db, `users/${user.value.uid}/availability/2`));
+    const availabilityThursday = useDatabaseObject(dbRef(db, `users/${user.value.uid}/availability/3`));
+    const availabilityFriday = useDatabaseObject(dbRef(db, `users/${user.value.uid}/availability/4`));
+    const availabilitySaturday = useDatabaseObject(dbRef(db, `users/${user.value.uid}/availability/5`));
+    const availabilitySunday = useDatabaseObject(dbRef(db, `users/${user.value.uid}/availability/6`));
 
     const availableMonday = computed({
         get() {
-            let available = false;
-
-            try {
-                available = availability.value[0];
-            } catch (err) {}
-
-            return available;
+            return availabilityMonday.value['$value'];
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 0: value });
@@ -25,13 +25,7 @@
 
     const availableTuesday = computed({
         get() {
-            let available = false;
-
-            try {
-                available = availability.value[1];
-            } catch (err) {}
-
-            return available;
+            return availabilityTuesday.value['$value'];
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 1: value });
@@ -40,13 +34,7 @@
 
     const availableWednesday = computed({
         get() {
-            let available = false;
-
-            try {
-                available = availability.value[2];
-            } catch (err) {}
-
-            return available;
+            return availabilityWednesday.value['$value'];
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 2: value });
@@ -55,13 +43,7 @@
 
     const availableThursday = computed({
         get() {
-            let available = false;
-
-            try {
-                available = availability.value[3];
-            } catch (err) {}
-
-            return available;
+            return availabilityThursday.value['$value'];
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 3: value });
@@ -70,13 +52,7 @@
 
     const availableFriday = computed({
         get() {
-            let available = false;
-
-            try {
-                available = availability.value[4];
-            } catch (err) {}
-
-            return available;
+            return availabilityFriday.value['$value'];
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 4: value });
@@ -85,13 +61,7 @@
 
     const availableSaturday = computed({
         get() {
-            let available = false;
-
-            try {
-                available = availability.value[5];
-            } catch (err) {}
-
-            return available;
+            return availabilitySaturday.value['$value'];
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 5: value });
@@ -100,13 +70,7 @@
 
     const availableSunday = computed({
         get() {
-            let available = false;
-
-            try {
-                available = availability.value[6];
-            } catch (err) {}
-
-            return available;
+            return availabilitySunday.value['$value'];
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 6: value });
