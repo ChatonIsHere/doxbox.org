@@ -1,21 +1,31 @@
 <script setup>
     import { computed, ref } from 'vue';
     import { useDatabase, useDatabaseObject, useCurrentUser } from 'vuefire';
-    import { ref as dbRef } from 'firebase/database';
+    import { ref as dbRef, push } from 'firebase/database';
 
     const db = useDatabase();
     const user = useCurrentUser();
 
     const campaigns = useDatabaseObject(dbRef(db, `quinn/campaigns/`));
     const history = useDatabaseObject(dbRef(db, `sessions/history/`));
-    const upcoming = useDatabaseObject(dbRef(db, `sessions/upcoming/`));
+
+    const upcomingRef = dbRef(db, `sessions/upcoming/`);
+    const upcoming = useDatabaseObject(upcomingRef);
 
     const userExtended = useDatabaseObject(dbRef(db, `users/${user.value.uid}/`));
 
     const calendar = ref(null);
 
-    const viewThisMonth = () => {
-        calendar.value.move(new Date());
+    const datePicker = ref(null);
+    const selectedDate = ref('Please select a date');
+
+    const schedulingNewSession = ref(false);
+
+    const latestErrorMessage = ref('');
+
+    const viewThisMonth = (target) => {
+        if (target == 'calendar') calendar.value.move(new Date());
+        if (target == 'datePicker') datePicker.value.move(new Date());
     };
 
     const sessionHistory = computed(() => {
@@ -25,9 +35,9 @@
                 dates: [new Date()],
                 highlight: {
                     color: 'indigo',
-                    fillMode: 'outline',
                     style: 'background-color: #00000000;',
                 },
+                bar: true,
             },
         ];
 
@@ -84,16 +94,68 @@
             },
         ];
     });
+
+    const dmsCampaign = computed(() => {
+        if (typeof campaigns.value !== 'undefined' && typeof userExtended.value !== 'undefined') return campaigns.value[userExtended.value.dmCampaign];
+        else return false;
+    });
+
+    const toggleSessionScheduleDialog = () => {
+        if (schedulingNewSession.value) selectedDate.value = 'Please select a date';
+        schedulingNewSession.value = !schedulingNewSession.value;
+    };
+
+    const formatDate = (date) => {
+        let targetDate = new Date(date);
+        return `${targetDate.getFullYear()}-${targetDate.getMonth() + 1}-${targetDate.getDate()}`;
+    };
+
+    const displaySelectedDate = computed(() => {
+        let dateString = `New ${dmsCampaign.value.name} Session on ${formatDate(selectedDate.value)}`;
+
+        return selectedDate.value == 'Please select a date' ? selectedDate.value : dateString;
+    });
+
+    const scheduleNewSession = () => {
+        let sessions = Object.values(history.value).concat(Object.values(upcoming.value));
+        if (sessions.find((session) => session.date == formatDate(selectedDate.value))) {
+            latestErrorMessage.value = `There is already a session scheduled for ${formatDate(selectedDate.value)}`;
+            setTimeout(() => {
+                latestErrorMessage.value = '';
+            }, 15000);
+        } else {
+            push(upcomingRef, {
+                campaign: dmsCampaign.value.id,
+                date: formatDate(selectedDate.value),
+            });
+        }
+
+        toggleSessionScheduleDialog();
+    };
 </script>
 
 <template>
-    <VCalendar ref="calendar" :attributes="sessionHistory" :disabled-dates="disabledDates" :min-date="new Date('2024-11-01')" :max-date="new Date(Date.now() + 12096e5)" borderless>
+    <VDatePicker v-if="schedulingNewSession" ref="datePicker" v-model="selectedDate" :attributes="sessionHistory" :min-date="new Date(Date.now() + 864e5)" :max-date="new Date(Date.now() + 12096e5 + 12096e5)" borderless show-weeknumbers="left">
         <template #footer>
-            <div class="w-full px-3 pb-3">
-                <button class="btn btn-sm btn-dark" v-on:click="viewThisMonth">This Month</button>
+            <div class="btn-group w-full px-3 pb-3">
+                <button class="btn btn-sm btn-dark" v-on:click="viewThisMonth('datePicker')">This Month</button>
+                <button class="btn btn-sm btn-danger" v-on:click="toggleSessionScheduleDialog">Cancel</button>
+            </div>
+            <div>
+                <button class="btn btn-sm btn-secondary btn-block" v-if="selectedDate == 'Please select a date'">{{ displaySelectedDate }}</button>
+                <button class="btn btn-sm btn-success btn-block" v-else v-on:click="scheduleNewSession()">{{ displaySelectedDate }}</button>
+            </div>
+        </template>
+    </VDatePicker>
+    <VCalendar v-else ref="calendar" :attributes="sessionHistory" :disabled-dates="disabledDates" :min-date="new Date('2024-11-01')" :max-date="new Date(Date.now() + 12096e5)" borderless show-weeknumbers="left">
+        <template #footer>
+            <div class="btn-group w-full px-3 pb-3">
+                <button class="btn btn-sm btn-dark" v-on:click="viewThisMonth('calendar')">This Month</button>
+                <button class="btn btn-sm btn-success" v-if="dmsCampaign" v-on:click="toggleSessionScheduleDialog">New Session</button>
             </div>
         </template>
     </VCalendar>
+    <p class="text-danger pt-2">{{ latestErrorMessage }}</p>
 </template>
 
 <style>
