@@ -16,7 +16,11 @@
 
     const availableMonday = computed({
         get() {
-            return availabilityMonday.value['$value'];
+            try {
+                return availabilityMonday.value['$value'];
+            } catch (err) {
+                return false;
+            }
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 0: value });
@@ -25,7 +29,11 @@
 
     const availableTuesday = computed({
         get() {
-            return availabilityTuesday.value['$value'];
+            try {
+                return availabilityTuesday.value['$value'];
+            } catch (err) {
+                return false;
+            }
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 1: value });
@@ -34,7 +42,11 @@
 
     const availableWednesday = computed({
         get() {
-            return availabilityWednesday.value['$value'];
+            try {
+                return availabilityWednesday.value['$value'];
+            } catch (err) {
+                return false;
+            }
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 2: value });
@@ -43,7 +55,11 @@
 
     const availableThursday = computed({
         get() {
-            return availabilityThursday.value['$value'];
+            try {
+                return availabilityThursday.value['$value'];
+            } catch (err) {
+                return false;
+            }
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 3: value });
@@ -52,7 +68,11 @@
 
     const availableFriday = computed({
         get() {
-            return availabilityFriday.value['$value'];
+            try {
+                return availabilityFriday.value['$value'];
+            } catch (err) {
+                return false;
+            }
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 4: value });
@@ -61,7 +81,11 @@
 
     const availableSaturday = computed({
         get() {
-            return availabilitySaturday.value['$value'];
+            try {
+                return availabilitySaturday.value['$value'];
+            } catch (err) {
+                return false;
+            }
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 5: value });
@@ -70,7 +94,11 @@
 
     const availableSunday = computed({
         get() {
-            return availabilitySunday.value['$value'];
+            try {
+                return availabilitySunday.value['$value'];
+            } catch (err) {
+                return false;
+            }
         },
         set(value) {
             update(dbRef(db, `users/${user.value.uid}/availability`), { 6: value });
