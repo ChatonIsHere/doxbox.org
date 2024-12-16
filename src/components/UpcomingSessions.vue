@@ -27,6 +27,8 @@
                 });
             });
 
+            modifiedSessionsArray.sort((a, b) => new Date(a.date) - new Date(b.date));
+
             return modifiedSessionsArray;
         } catch (err) {
             return [];
