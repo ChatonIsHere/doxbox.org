@@ -33,11 +33,8 @@
             {
                 key: 'today',
                 dates: [new Date()],
-                highlight: {
-                    color: 'indigo',
-                    style: 'background-color: #00000000;',
-                },
-                bar: true,
+                color: 'indigo',
+                dot: true,
             },
         ];
 
