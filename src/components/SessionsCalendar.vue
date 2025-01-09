@@ -28,13 +28,6 @@
         if (target == 'datePicker') datePicker.value.move(new Date());
     };
 
-    const sessions = computed(() => {
-        let sessions = Object.values(history.value);
-        if (upcoming.value !== null) sessions = sessions.concat(Object.values(upcoming.value));
-
-        return sessions;
-    });
-
     const calendarSessions = computed(() => {
         let dateArray = [
             {
@@ -46,7 +39,10 @@
         ];
 
         try {
-            for (let session of Object.values(sessions.value)) {
+            let sessions = Object.values(history.value);
+            if (upcoming.value !== null) sessions = sessions.concat(Object.values(upcoming.value));
+
+            for (let session of sessions) {
                 let backgroundColor = 'blue';
                 let fillMode = 'solid';
                 let label = 'Unknown campaign';
@@ -57,7 +53,9 @@
                         fillMode = campaigns.value[session.campaign].calendar.style;
                         label = campaigns.value[session.campaign].name;
                     }
-                } catch (err) {}
+                } catch (err) {
+                    console.error(err);
+                }
 
                 dateArray.push({
                     dates: [new Date(session.date)],
@@ -119,7 +117,10 @@
     });
 
     const scheduleNewSession = () => {
-        if (sessions.value.find((session) => session.date == formatDate(selectedDate.value))) {
+        let sessions = Object.values(history.value);
+        if (upcoming.value !== null) sessions = sessions.concat(Object.values(upcoming.value));
+
+        if (sessions.find((session) => session.date == formatDate(selectedDate.value))) {
             latestErrorMessage.value = `There is already a session scheduled for ${formatDate(selectedDate.value)}`;
             setTimeout(() => {
                 latestErrorMessage.value = '';
