@@ -46,7 +46,7 @@
         ];
 
         try {
-            for (let session of sessions.value) {
+            for (let session of Object.values(sessions.value)) {
                 let backgroundColor = 'blue';
                 let fillMode = 'solid';
                 let label = 'Unknown campaign';
