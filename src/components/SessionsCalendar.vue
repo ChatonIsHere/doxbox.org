@@ -28,7 +28,14 @@
         if (target == 'datePicker') datePicker.value.move(new Date());
     };
 
-    const sessionHistory = computed(() => {
+    const sessions = computed(() => {
+        let sessions = Object.values(history.value);
+        if (upcoming.value !== null) sessions = sessions.concat(Object.values(upcoming.value));
+
+        return sessions;
+    });
+
+    const calendarSessions = computed(() => {
         let dateArray = [
             {
                 key: 'today',
@@ -39,9 +46,7 @@
         ];
 
         try {
-            let sessions = Object.values(history.value).concat(Object.values(upcoming.value));
-
-            for (let session of sessions) {
+            for (let session of sessions.value) {
                 let backgroundColor = 'blue';
                 let fillMode = 'solid';
                 let label = 'Unknown campaign';
@@ -114,8 +119,7 @@
     });
 
     const scheduleNewSession = () => {
-        let sessions = Object.values(history.value).concat(Object.values(upcoming.value));
-        if (sessions.find((session) => session.date == formatDate(selectedDate.value))) {
+        if (sessions.value.find((session) => session.date == formatDate(selectedDate.value))) {
             latestErrorMessage.value = `There is already a session scheduled for ${formatDate(selectedDate.value)}`;
             setTimeout(() => {
                 latestErrorMessage.value = '';
@@ -132,7 +136,7 @@
 </script>
 
 <template>
-    <VDatePicker v-if="schedulingNewSession" ref="datePicker" v-model="selectedDate" :attributes="sessionHistory" :min-date="new Date(Date.now() + 864e5)" :max-date="new Date(Date.now() + 12096e5 + 12096e5)" borderless show-weeknumbers="left">
+    <VDatePicker v-if="schedulingNewSession" ref="datePicker" v-model="selectedDate" :attributes="calendarSessions" :min-date="new Date(Date.now() + 864e5)" :max-date="new Date(Date.now() + 12096e5 + 12096e5)" borderless show-weeknumbers="left">
         <template #footer>
             <div class="btn-group w-full px-3 pb-3">
                 <button class="btn btn-sm btn-dark" v-on:click="viewThisMonth('datePicker')">This Month</button>
@@ -144,7 +148,7 @@
             </div>
         </template>
     </VDatePicker>
-    <VCalendar v-else ref="calendar" :attributes="sessionHistory" :disabled-dates="disabledDates" :min-date="new Date('2024-11-01')" :max-date="new Date(Date.now() + 12096e5)" borderless show-weeknumbers="left">
+    <VCalendar v-else ref="calendar" :attributes="calendarSessions" :disabled-dates="disabledDates" :min-date="new Date('2024-11-01')" :max-date="new Date(Date.now() + 12096e5)" borderless show-weeknumbers="left">
         <template #footer>
             <div class="btn-group w-full px-3 pb-3">
                 <button class="btn btn-sm btn-dark" v-on:click="viewThisMonth('calendar')">This Month</button>
