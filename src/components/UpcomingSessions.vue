@@ -11,6 +11,8 @@
 
     const userExtended = useDatabaseObject(dbRef(db, `users/${user.value.uid}/`));
 
+    const discordUsernames = useDatabaseObject(dbRef(db, `quinn/userData/username/`));
+
     const campaignFromID = (id) => {
         return Object.values(campaigns.value).find((campaign) => campaign.id === id);
     };
@@ -20,11 +22,17 @@
             let modifiedSessionsArray = [];
 
             Object.entries(sessions).forEach((session) => {
-                modifiedSessionsArray.push({
-                    id: session[0],
-                    campaign: session[1].campaign,
-                    date: session[1].date,
-                });
+                let players = Object.keys(campaigns.value[session[1].campaign].players);
+                players.push(campaigns.value[session[1].campaign].dm);
+
+                if (players.includes(userExtended.value.discordID)) {
+                    modifiedSessionsArray.push({
+                        id: session[0],
+                        campaign: session[1].campaign,
+                        date: session[1].date,
+                        availability: session[1].availability,
+                    });
+                }
             });
 
             modifiedSessionsArray.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -55,6 +63,66 @@
     const cancelSession = (sessionID) => {
         if (sessionID !== '') update(dbRef(db, `sessions/upcoming/`), { [sessionID]: null });
     };
+
+    const usernameFromDiscordID = (discordID) => {
+        return typeof discordUsernames.value !== 'undefined' ? discordUsernames.value[discordID] : discordID;
+    };
+
+    const getPlayerAvailability = (session) => {
+        if (typeof campaigns.value === 'undefined' || typeof session.availability === 'undefined') return false;
+
+        let available = {
+                title: 'Available',
+                players: [],
+            },
+            maybeAvailable = {
+                title: 'Maybe Available',
+                players: [],
+            },
+            unavailable = {
+                title: 'Unavailable',
+                players: [],
+            },
+            noResponse = {
+                title: 'No Response',
+                players: [],
+            };
+
+        let players = Object.keys(campaigns.value[session.campaign].players);
+        players.push(campaigns.value[session.campaign].dm);
+
+        for (let player of players) {
+            switch (session.availability[player]) {
+                case 'available':
+                    available.players.push(player);
+                    break;
+                case 'maybeAvailable':
+                    maybeAvailable.players.push(player);
+                    break;
+                case 'unavailable':
+                    unavailable.players.push(player);
+                    break;
+                default:
+                    noResponse.players.push(player);
+                    break;
+            }
+        }
+
+        let availabilityArray = [];
+
+        if (available.players.length > 0) availabilityArray.push(available);
+        if (maybeAvailable.players.length > 0) availabilityArray.push(maybeAvailable);
+        if (unavailable.players.length > 0) availabilityArray.push(unavailable);
+        if (noResponse.players.length > 0) availabilityArray.push(noResponse);
+
+        return availabilityArray;
+    };
+
+    const updateAvailability = (sessionID, sessionavailabilityType) => {
+        update(dbRef(db, `sessions/upcoming/${sessionID}/availability/`), {
+            [userExtended.value.discordID]: sessionavailabilityType,
+        });
+    };
 </script>
 
 <template>
@@ -65,7 +133,24 @@
             </h2>
             <div :id="`accordion-${session.date}-${session.campaign}`" class="accordion-collapse collapse" data-bs-parent="#sessionsAccordion">
                 <div class="accordion-body">
-                    <a class="btn btn-danger btn-info m-2" v-if="dmsCampaign.id == session.campaign" v-on:click="cancelSession(session.id)">Cancel Session</a>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col" v-for="availabilityType in getPlayerAvailability(session)">
+                                <h5>{{ availabilityType.title }}</h5>
+                                <ul class="list-unstyled">
+                                    <li v-for="player in availabilityType.players">{{ usernameFromDiscordID(player) }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="btn-group m-2" v-if="dmsCampaign.id == session.campaign" role="group" aria-label="Basic example">
+                        <button type="button" class="btn btn-danger btn-info" v-on:click="cancelSession(session.id)">Cancel Session</button>
+                    </div>
+                    <div class="btn-group m-2" v-else role="group" aria-label="Basic example">
+                        <button type="button" v-on:click="updateAvailability(session.id, 'available')" class="btn btn-success">Available</button>
+                        <button type="button" v-on:click="updateAvailability(session.id, 'maybeAvailable')" class="btn btn-warning">Maybe Available</button>
+                        <button type="button" v-on:click="updateAvailability(session.id, 'unavailable')" class="btn btn-danger">Unavailable</button>
+                    </div>
                 </div>
             </div>
         </div>

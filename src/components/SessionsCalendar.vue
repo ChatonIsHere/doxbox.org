@@ -129,6 +129,9 @@
             push(upcomingRef, {
                 campaign: dmsCampaign.value.id,
                 date: formatDate(selectedDate.value),
+                availability: {
+                    [userExtended.value.discordID]: 'available',
+                },
             });
         }
 
