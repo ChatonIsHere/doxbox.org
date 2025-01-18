@@ -1,0 +1,50 @@
+{
+    "rules": {
+        "gameservers": {
+            ".read": "auth != null"
+        },
+        "navigation": {
+            ".read": "auth != null"
+        },
+        "quinn": {
+            "campaigns": {
+                ".read": "auth != null",
+                "$campaignId": {
+                    "sessionDay": {
+                        ".write": "auth != null && root.child('quinn').child('campaigns').child($campaignId).child('dm').val() === auth.token.discordID"
+                    }
+                }
+            },
+            "initiative": {
+                ".read": "auth != null"
+            },
+            "userData": {
+                "d20": {
+                    ".read": "auth != null"
+                },
+                "username": {
+                    ".read": "auth != null"
+                }
+            }
+        },
+        "sessions": {
+            ".read": "auth != null",
+            "upcoming": {
+                "$sessionId": {
+                    ".write": "auth != null && ((!data.exists() && root.child('users').child(auth.uid).child('dmCampaign').exists()) || root.child('quinn').child('campaigns').child(root.child('sessions').child('upcoming').child($sessionId).child('campaign').val()).child('dm').val() === auth.token.discordID)",
+                    "availability": {
+                        "$userId": {
+                            ".write": "auth != null && $userId === auth.token.discordID"
+                        }
+                    }
+                }
+            }
+        },
+        "users": {
+            "$userId": {
+                ".read": "$userId === auth.uid",
+                ".write": "$userId === auth.uid"
+            }
+        }
+    }
+}
