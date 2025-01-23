@@ -7,7 +7,7 @@
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-md navbar-dark navbar-laravel">
+    <nav class="navbar navbar-expand-md navbar-dark navbar-laravel mx-4 py-2">
         <div class="container-fluid">
             <router-link to="/" class="navbar-brand">Dox Box</router-link>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,7 +15,7 @@
             </button>
             <div class="collapse navbar-collapse me-auto" id="navbarNav">
                 <NavbarEntries v-if="user" />
-                <NavbarAuth class="ms-auto"></NavbarAuth>
+                <NavbarAuth></NavbarAuth>
             </div>
         </div>
     </nav>

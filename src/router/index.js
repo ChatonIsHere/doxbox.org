@@ -5,6 +5,7 @@ import HomeView from '../views/HomeView.vue';
 const GameserversView = () => import('../views/GameserversView.vue');
 const QuinnView = () => import('../views/QuinnView.vue');
 const SessionsView = () => import('../views/SessionsView.vue');
+const SettingsView = () => import('../views/SettingsView.vue');
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -41,6 +42,15 @@ const router = createRouter({
             component: SessionsView,
             meta: {
                 title: 'Tabletop Sessions',
+                requiresAuth: true,
+            },
+        },
+        {
+            path: '/settings',
+            name: 'settings',
+            component: SettingsView,
+            meta: {
+                title: 'Settings',
                 requiresAuth: true,
             },
         },

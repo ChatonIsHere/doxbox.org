@@ -43,6 +43,20 @@
 </script>
 
 <template>
-    <button v-if="user" @click.prevent="signOutButton()" class="btn btn-secondary">Log Out</button>
-    <button v-else @click.prevent="signinPopup()" class="btn btn-secondary">Sign in with google</button>
+    <ul class="navbar-nav ms-auto">
+        <li v-if="user" class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">{{ user.displayName }}</a>
+            <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
+                <li class="nav-item">
+                    <router-link class="dropdown-item" to="/settings">Settings</router-link>
+                </li>
+                <li class="nav-item">
+                    <a class="text-danger dropdown-item" href="" @click.prevent="signOutButton()">Log Out</a>
+                </li>
+            </ul>
+        </li>
+        <li v-else class="nav-item">
+            <a class="nav-link text-white" @click.prevent="signinPopup()" href="">Sign in with google</a>
+        </li>
+    </ul>
 </template>

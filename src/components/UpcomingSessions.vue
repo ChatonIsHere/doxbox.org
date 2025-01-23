@@ -137,6 +137,7 @@
                         <div class="row">
                             <div class="col" v-for="availabilityType in getPlayerAvailability(session)">
                                 <h5>{{ availabilityType.title }}</h5>
+                                <hr class="thin" />
                                 <ul class="list-unstyled">
                                     <li v-for="player in availabilityType.players">{{ usernameFromDiscordID(player) }}</li>
                                 </ul>
@@ -156,3 +157,10 @@
         </div>
     </div>
 </template>
+
+<style>
+    hr.thin {
+        margin-top: 0.5em;
+        margin-bottom: 0.5em;
+    }
+</style>
