@@ -43,7 +43,18 @@
         "users": {
             "$userId": {
                 ".read": "$userId === auth.uid",
-                ".write": "$userId === auth.uid"
+                "availability": {
+                    ".write": "$userId === auth.uid"
+                },
+                "displayName": {
+                    ".write": "$userId === auth.uid"
+                },
+                "email": {
+                    ".write": "$userId === auth.uid"
+                },
+                "lastLogon": {
+                    ".write": "$userId === auth.uid"
+                }
             }
         }
     }
