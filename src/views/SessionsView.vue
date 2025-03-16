@@ -1,9 +1,8 @@
 <script setup>
-    import { computed, ref } from 'vue';
+    import { computed } from 'vue';
     import { useDatabase, useCurrentUser, useDatabaseObject } from 'vuefire';
-    import { ref as dbRef, update } from 'firebase/database';
+    import { ref as dbRef } from 'firebase/database';
 
-    import WeeklyAvailability from '../components/WeeklyAvailability.vue';
     import SessionDayDropdown from '../components/SessionDayDropdown.vue';
     import UpcomingSessions from '../components/UpcomingSessions.vue';
     import SessionsCalendar from '../components/SessionsCalendar.vue';
@@ -24,23 +23,17 @@
 <template>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-12 col-lg-4 pb-5">
+            <div class="col-12 col-lg-3 pb-5">
                 <h4 class="fw-bold text-white pb-4">Session Calendar</h4>
                 <SessionsCalendar />
-            </div>
-            <div class="col-12 col-lg-4 pb-5">
-                <h4 class="fw-bold text-white pb-2">Upcoming Sessions</h4>
-                <UpcomingSessions />
-            </div>
-            <div class="col-12 col-lg-4 pb-5">
-                <div>
-                    <h4 class="fw-bold text-white pb-2">Typical Weekly Availability</h4>
-                    <WeeklyAvailability />
-                </div>
-                <div v-if="dmsCampaign" class="w-50 mx-auto pt-4">
-                    <p class="text-white">Automatically schedule sessions for {{ dmsCampaign.name }} on</p>
+                <div v-if="dmsCampaign" class="w-75 mx-auto pt-4">
+                    <p class="text-white">Automatically schedule tabletop sessions for {{ dmsCampaign.name }} on?</p>
                     <SessionDayDropdown :campaign="dmsCampaign" />
                 </div>
+            </div>
+            <div class="col-12 col-lg-9 pe-lg-5">
+                <h4 class="fw-bold text-white pb-2">Upcoming Sessions</h4>
+                <UpcomingSessions />
             </div>
         </div>
         <div class="row pt-5">

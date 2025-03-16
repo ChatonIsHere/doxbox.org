@@ -55,6 +55,12 @@
         return `${campaign.name} on ${dateString}`;
     };
 
+    const colorFromSession = (session) => {
+        let campaign = campaignFromID(session.campaign);
+
+        return campaign.calendar.color;
+    };
+
     const dmsCampaign = computed(() => {
         if (typeof campaigns.value !== 'undefined' && typeof userExtended.value !== 'undefined') return campaigns.value[userExtended.value.dmCampaign];
         else return false;
@@ -130,6 +136,7 @@
         <div class="accordion-item" v-for="session in sortSessions(upcomingSessions)">
             <h2 class="accordion-header">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="`#accordion-${session.date}-${session.campaign}`" aria-expanded="false" :aria-controls="`accordion-${session.date}-${session.campaign}`">{{ sessionDateString(session) }}</button>
+                <div style="width: 100%; height: 2px" v-bind:style="{ backgroundColor: colorFromSession(session) }"></div>
             </h2>
             <div :id="`accordion-${session.date}-${session.campaign}`" class="accordion-collapse collapse" data-bs-parent="#sessionsAccordion">
                 <div class="accordion-body">
@@ -158,9 +165,24 @@
     </div>
 </template>
 
-<style>
+<style scoped>
     hr.thin {
         margin-top: 0.5em;
         margin-bottom: 0.5em;
+    }
+
+    .accordion-button {
+        background-color: #1e1e1e;
+        color: #ffffff;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background-color: #212529;
+        color: #ffffff;
+    }
+
+    .accordion-button:hover {
+        background-color: #212529;
+        color: #ffffff;
     }
 </style>
