@@ -33,8 +33,7 @@
             <div class="col-12 col-md-6 col-lg-4 col-xl-2 pb-2" v-for="campaign in playerCampaigns" :key="campaign.id">
                 <div class="card h-100 d-flex flex-column">
                     <div class="card-header p-3">
-                        <h3>{{ campaign.name }}</h3>
-                        <small v-if="campaign.details.date !== '0001-01-01'">{{ campaign.details.date }}</small>
+                        <h4>{{ campaign.name }}</h4>
                     </div>
                     <div style="width: 100%; height: 2px" v-bind:style="{ backgroundColor: campaign.calendar.color }"></div>
                     <ul class="list-group list-group-flush flex-grow-1">

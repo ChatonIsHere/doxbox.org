@@ -36,7 +36,7 @@
                 <UpcomingSessions />
             </div>
         </div>
-        <div class="row pt-5">
+        <div class="row">
             <CampaignsBar />
         </div>
     </div>
