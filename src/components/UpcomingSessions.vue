@@ -144,7 +144,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="btn-group m-2" v-if="dmsCampaign.id == session.campaign" role="group" aria-label="Basic example">
+                    <div class="btn-group m-2" v-if="dmsCampaign ? dmsCampaign.id == session.campaign : false" role="group" aria-label="Basic example">
                         <button type="button" class="btn btn-danger btn-info" v-on:click="cancelSession(session.id)">Cancel Session</button>
                     </div>
                     <div class="btn-group m-2" v-else role="group" aria-label="Basic example">

@@ -1,8 +1,11 @@
 <script setup>
-    import { useCurrentUser } from 'vuefire';
+    import { useCurrentExtendedUser } from '@/composables/useCurrentExtendedUser';
+    import NoLinkedDiscord from '../components/NoLinkedDiscord.vue';
     import ClickCopy from '../components/ClickCopy.vue';
 
-    const user = useCurrentUser();
+    import { needsLinking } from '@/utilities/userHelpers';
+
+    const { user } = useCurrentExtendedUser();
 </script>
 
 <template>
@@ -19,5 +22,6 @@
                 <ClickCopy v-else :content="'https://discord.gg/doxbox'" />
             </div>
         </div>
+        <NoLinkedDiscord v-if="user && needsLinking()" class="pt-4" />
     </div>
 </template>

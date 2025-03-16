@@ -51,7 +51,7 @@
                     <router-link class="dropdown-item" to="/settings">Settings</router-link>
                 </li>
                 <li class="nav-item">
-                    <a class="text-danger dropdown-item" href="" @click.prevent="signOutButton()">Log Out</a>
+                    <a class="text-danger dropdown-item" href="" @click.prevent="signOutButton()">Sign Out</a>
                 </li>
             </ul>
         </li>

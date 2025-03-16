@@ -15,18 +15,6 @@
     const userExtended = useDatabaseObject(dbRef(db, `users/${user.value.uid}/`));
     const campaigns = useDatabaseObject(dbRef(db, `quinn/campaigns/`));
 
-    const userHasDiscordLinked = computed(() => {
-        try {
-            if (userExtended.value.discordID) return true;
-        } catch (err) {
-            return false;
-        }
-    });
-
-    const getUserID = computed(() => {
-        return user.value.uid;
-    });
-
     const dmsCampaign = computed(() => {
         if (typeof campaigns.value !== 'undefined' && typeof userExtended.value !== 'undefined') return campaigns.value[userExtended.value.dmCampaign];
         else return false;
@@ -34,13 +22,7 @@
 </script>
 
 <template>
-    <div v-if="!userHasDiscordLinked">
-        <p>Please link your Discord account using the Quinn command /linkaccount</p>
-        <p>
-            Your user ID is: <code>{{ getUserID }}</code>
-        </p>
-    </div>
-    <div v-else class="container-fluid">
+    <div class="container-fluid">
         <div class="row pb-5">
             <div class="col">
                 <h4 class="fw-bold text-white pb-4">Session Calendar</h4>

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { getCurrentUser } from 'vuefire';
+import { getAuth } from 'firebase/auth';
+import { getCurrentUser } from '@/utilities/userHelpers';
 
 import HomeView from '../views/HomeView.vue';
 const GameserversView = () => import('../views/GameserversView.vue');
@@ -16,6 +17,8 @@ const router = createRouter({
             component: HomeView,
             meta: {
                 title: 'Home',
+                requiresAuth: false,
+                requiresLinkedDiscord: false,
             },
         },
         {
@@ -25,6 +28,7 @@ const router = createRouter({
             meta: {
                 title: 'Gameservers',
                 requiresAuth: true,
+                requiresLinkedDiscord: true,
             },
         },
         {
@@ -34,6 +38,7 @@ const router = createRouter({
             meta: {
                 title: 'Quinn',
                 requiresAuth: true,
+                requiresLinkedDiscord: true,
             },
         },
         {
@@ -43,6 +48,7 @@ const router = createRouter({
             meta: {
                 title: 'Tabletop Sessions',
                 requiresAuth: true,
+                requiresLinkedDiscord: true,
             },
         },
         {
@@ -52,6 +58,7 @@ const router = createRouter({
             meta: {
                 title: 'Settings',
                 requiresAuth: true,
+                requiresLinkedDiscord: false,
             },
         },
         {
@@ -73,7 +80,18 @@ router.beforeEach(async (to) => {
     }
 });
 
-router.beforeEach((to, next) => {
+router.beforeEach(async (to) => {
+    if (to.meta.requiresLinkedDiscord) {
+        const user = await getCurrentUser();
+        if (!user.claims.discordID) {
+            return {
+                path: '/',
+            };
+        }
+    }
+});
+
+router.beforeEach((to, from, next) => {
     const nearestWithTitle = to.matched
         .slice()
         .reverse()
@@ -82,6 +100,7 @@ router.beforeEach((to, next) => {
     if (nearestWithTitle) {
         document.title = nearestWithTitle.meta.title + ' - Dox Box';
     }
+    next();
 });
 
 export default router;
