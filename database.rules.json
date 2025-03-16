@@ -1,14 +1,14 @@
 {
     "rules": {
         "gameservers": {
-            ".read": "auth != null"
+            ".read": "auth != null && auth.token.discordID != null"
         },
         "navigation": {
             ".read": "auth != null"
         },
         "quinn": {
             "campaigns": {
-                ".read": "auth != null",
+                ".read": "auth != null && auth.token.discordID != null",
                 "$campaignId": {
                     "sessionDay": {
                         ".write": "auth != null && root.child('quinn').child('campaigns').child($campaignId).child('dm').val() === auth.token.discordID"

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { getAuth } from 'firebase/auth';
-import { getCurrentUser } from '@/utilities/userHelpers';
+import { getCurrentUser } from 'vuefire';
 
 import HomeView from '../views/HomeView.vue';
 const GameserversView = () => import('../views/GameserversView.vue');
@@ -69,38 +69,37 @@ const router = createRouter({
     linkExactActiveClass: 'active',
 });
 
-router.beforeEach(async (to) => {
-    if (to.meta.requiresAuth) {
+router.beforeEach(async (to, from, next) => {
+    try {
         const user = await getCurrentUser();
-        if (!user) {
-            return {
-                path: '/',
-            };
+
+        if (to.meta.requiresAuth && !user) {
+            return next({ path: '/' });
         }
-    }
-});
 
-router.beforeEach(async (to) => {
-    if (to.meta.requiresLinkedDiscord) {
-        const user = await getCurrentUser();
-        if (!user.claims.discordID) {
-            return {
-                path: '/',
-            };
+        if (to.meta.requiresLinkedDiscord && user) {
+            const tokenResult = await user.getIdTokenResult();
+            const claims = tokenResult.claims;
+
+            if (to.meta.requiresLinkedDiscord && !claims.discordID) {
+                return next({ path: '/' });
+            }
         }
-    }
-});
 
-router.beforeEach((to, from, next) => {
-    const nearestWithTitle = to.matched
-        .slice()
-        .reverse()
-        .find((r) => r.meta && r.meta.title);
+        const nearestWithTitle = to.matched
+            .slice()
+            .reverse()
+            .find((r) => r.meta && r.meta.title);
 
-    if (nearestWithTitle) {
-        document.title = nearestWithTitle.meta.title + ' - Dox Box';
+        if (nearestWithTitle) {
+            document.title = nearestWithTitle.meta.title + ' - Dox Box';
+        }
+
+        next();
+    } catch (error) {
+        console.error('Error during navigation guard:', error);
+        next(false); // Cancel navigation on error
     }
-    next();
 });
 
 export default router;
