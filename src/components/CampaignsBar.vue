@@ -28,29 +28,33 @@
 </script>
 
 <template>
-    <div class="col pb-2" v-for="campaign in playerCampaigns">
-        <div class="card">
-            <div class="card-header p-3">
-                <h3>{{ campaign.name }}</h3>
-                <small v-if="campaign.details.date !== '0001-01-01'">{{ campaign.details.date }}</small>
-            </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">
-                    <h5>DM</h5>
-                    <ul class="list-unstyled">
-                        <li>{{ usernameFromDiscordID(campaign.dm) }}</li>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-6 col-lg-4 col-xl-2 pb-2" v-for="campaign in playerCampaigns" :key="campaign.id">
+                <div class="card h-100">
+                    <div class="card-header p-3">
+                        <h3>{{ campaign.name }}</h3>
+                        <small v-if="campaign.details.date !== '0001-01-01'">{{ campaign.details.date }}</small>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <h5>DM</h5>
+                            <ul class="list-unstyled">
+                                <li>{{ usernameFromDiscordID(campaign.dm) }}</li>
+                            </ul>
+                        </li>
+                        <li class="list-group-item">
+                            <h5>Players</h5>
+                            <ul class="list-unstyled">
+                                <li v-for="player in Object.keys(campaign.players)" :key="player">{{ usernameFromDiscordID(player) }}</li>
+                            </ul>
+                        </li>
                     </ul>
-                </li>
-                <li class="list-group-item">
-                    <h5>Players</h5>
-                    <ul class="list-unstyled">
-                        <li v-for="player in Object.keys(campaign.players)">{{ usernameFromDiscordID(player) }}</li>
-                    </ul>
-                </li>
-            </ul>
-            <div class="card-footer text-muted">
-                <a class="btn btn-primary btn-info m-2" v-if="campaign.details.url !== 'https://www.dndbeyond.com/my-campaigns'" :href="campaign.details.url">Campaign</a>
-                <a class="btn btn-primary btn-success m-2" v-if="campaign.details.map !== 'https://shmeppy.com/'" :href="campaign.details.map">Battlemap</a>
+                    <div class="card-footer text-muted">
+                        <a class="btn btn-primary btn-info m-2" v-if="campaign.details.url !== 'https://www.dndbeyond.com/my-campaigns'" :href="campaign.details.url">Campaign</a>
+                        <a class="btn btn-primary btn-success m-2" v-if="campaign.details.map !== 'https://shmeppy.com/'" :href="campaign.details.map">Battlemap</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

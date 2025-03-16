@@ -23,22 +23,22 @@
 
 <template>
     <div class="container-fluid">
-        <div class="row pb-5">
-            <div class="col">
+        <div class="row">
+            <div class="col-12 col-lg-4 pb-5">
                 <h4 class="fw-bold text-white pb-4">Session Calendar</h4>
                 <SessionsCalendar />
             </div>
-            <div class="col col-4 mx-5">
+            <div class="col-12 col-lg-4 pb-5">
                 <h4 class="fw-bold text-white pb-2">Upcoming Sessions</h4>
                 <UpcomingSessions />
             </div>
-            <div class="col">
+            <div class="col-12 col-lg-4 pb-5">
                 <div>
                     <h4 class="fw-bold text-white pb-2">Typical Weekly Availability</h4>
                     <WeeklyAvailability />
                 </div>
                 <div v-if="dmsCampaign" class="w-50 mx-auto pt-4">
-                    <h4 class="fw-bold text-white pb-2">{{ dmsCampaign.name }} Main Session</h4>
+                    <p class="text-white">Automatically schedule sessions for {{ dmsCampaign.name }} on</p>
                     <SessionDayDropdown :campaign="dmsCampaign" />
                 </div>
             </div>

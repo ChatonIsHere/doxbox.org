@@ -135,7 +135,7 @@
                 <div class="accordion-body">
                     <div class="container">
                         <div class="row">
-                            <div class="col" v-for="availabilityType in getPlayerAvailability(session)">
+                            <div class="col-12 col-md" v-for="availabilityType in getPlayerAvailability(session)">
                                 <h5>{{ availabilityType.title }}</h5>
                                 <hr class="thin" />
                                 <ul class="list-unstyled">
