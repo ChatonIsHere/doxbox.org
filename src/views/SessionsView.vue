@@ -24,7 +24,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12 col-lg-3 pb-5">
-                <h4 class="fw-bold text-white pb-4">Session Calendar</h4>
+                <h4 class="fw-bold text-white pb-3">Session Calendar</h4>
                 <SessionsCalendar />
                 <div v-if="dmsCampaign" class="w-75 mx-auto">
                     <p class="text-white">{{ dmsCampaign.name }} session day</p>
@@ -32,11 +32,11 @@
                 </div>
             </div>
             <div class="col-12 col-lg-9 pe-lg-5">
-                <h4 class="fw-bold text-white pb-2">Upcoming Sessions</h4>
+                <h4 class="fw-bold text-white pb-3">Upcoming Sessions</h4>
                 <UpcomingSessions />
             </div>
         </div>
-        <div class="row">
+        <div class="row pt-sm-5">
             <CampaignsBar />
         </div>
     </div>
