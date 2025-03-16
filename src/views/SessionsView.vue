@@ -26,8 +26,8 @@
             <div class="col-12 col-lg-3 pb-5">
                 <h4 class="fw-bold text-white pb-4">Session Calendar</h4>
                 <SessionsCalendar />
-                <div v-if="dmsCampaign" class="w-75 mx-auto pt-4">
-                    <p class="text-white">Automatically schedule tabletop sessions for {{ dmsCampaign.name }} on?</p>
+                <div v-if="dmsCampaign" class="w-75 mx-auto">
+                    <p class="text-white">{{ dmsCampaign.name }} session day</p>
                     <SessionDayDropdown :campaign="dmsCampaign" />
                 </div>
             </div>

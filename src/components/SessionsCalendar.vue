@@ -1,5 +1,5 @@
 <script setup>
-    import { computed, ref } from 'vue';
+    import { computed, ref, watch } from 'vue';
     import { useDatabase, useDatabaseObject, useCurrentUser } from 'vuefire';
     import { ref as dbRef, push } from 'firebase/database';
 
@@ -111,7 +111,7 @@
     };
 
     const displaySelectedDate = computed(() => {
-        let dateString = `New ${dmsCampaign.value.name} Session on ${formatDate(selectedDate.value)}`;
+        let dateString = `New session on ${formatDate(selectedDate.value)}`;
 
         return selectedDate.value == 'Please select a date' ? selectedDate.value : dateString;
     });
@@ -137,26 +137,49 @@
 
         toggleSessionScheduleDialog();
     };
+
+    const newSessionDateString = computed(() => {
+        let dateString = new Intl.DateTimeFormat('en-GB', {
+            dateStyle: 'full',
+            timeZone: 'Europe/London',
+        }).format(selectedDate.value);
+
+        return dateString;
+    });
+
+    watch(selectedDate, (newValue) => {
+        const targetDate = new Date(newValue);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (targetDate.getTime() === 0 || targetDate < today) {
+            selectedDate.value = 'Please select a date';
+        }
+    });
 </script>
 
 <template>
-    <VDatePicker v-if="schedulingNewSession" ref="datePicker" v-model="selectedDate" :attributes="calendarSessions" :min-date="new Date(Date.now() + 864e5)" :max-date="new Date(Date.now() + 12096e5 + 12096e5)" borderless show-weeknumbers="left">
+    <VDatePicker v-if="schedulingNewSession" ref="datePicker" class="w-75" v-model="selectedDate" :attributes="calendarSessions" :min-date="new Date(Date.now() + 864e5)" :max-date="new Date(Date.now() + 12096e5 + 12096e5)" borderless show-weeknumbers="left">
         <template #footer>
-            <div class="btn-group w-full px-3 pb-3">
-                <button class="btn btn-sm btn-dark" v-on:click="viewThisMonth('datePicker')">This Month</button>
-                <button class="btn btn-sm btn-danger" v-on:click="toggleSessionScheduleDialog">Cancel New Session</button>
+            <div class="btn-group d-flex w-100 px-3 pb-3">
+                <button class="btn btn-sm btn-dark w-50" v-on:click="viewThisMonth('datePicker')">This Month</button>
+                <button class="btn btn-sm btn-danger w-50" v-if="selectedDate == 'Please select a date'" v-on:click="toggleSessionScheduleDialog">Cancel</button>
+                <button class="btn btn-sm btn-success w-50" v-else v-on:click="scheduleNewSession()">Confirm</button>
             </div>
-            <div class="pb-2">
-                <button class="btn btn-sm btn-secondary btn-block" v-if="selectedDate == 'Please select a date'">{{ displaySelectedDate }}</button>
-                <button class="btn btn-sm btn-success btn-block" v-else v-on:click="scheduleNewSession()">{{ displaySelectedDate }}</button>
+            <div class="mx-2">
+                <p v-if="selectedDate == 'Please select a date'">Please select a date</p>
+                <div v-else>
+                    <p class="pb-0 mb-0">New {{ dmsCampaign.name }} session on</p>
+                    <p class="pt-0 mt-0">{{ newSessionDateString }}</p>
+                </div>
             </div>
         </template>
     </VDatePicker>
-    <VCalendar v-else ref="calendar" :attributes="calendarSessions" :disabled-dates="disabledDates" :min-date="new Date('2024-11-01')" :max-date="new Date(Date.now() + 12096e5)" borderless show-weeknumbers="left">
+    <VCalendar v-else ref="calendar" class="w-75" :attributes="calendarSessions" :disabled-dates="disabledDates" :min-date="new Date('2024-11-01')" :max-date="new Date(Date.now() + 12096e5)" borderless show-weeknumbers="left">
         <template #footer>
-            <div class="btn-group w-full px-3 pb-3">
-                <button class="btn btn-sm btn-dark" v-on:click="viewThisMonth('calendar')">This Month</button>
-                <button class="btn btn-sm btn-success" v-if="dmsCampaign" v-on:click="toggleSessionScheduleDialog">New Session</button>
+            <div class="btn-group d-flex w-100 px-3 pb-3">
+                <button class="btn btn-sm btn-dark w-50" v-on:click="viewThisMonth('calendar')">This Month</button>
+                <button class="btn btn-sm btn-success w-50" v-if="dmsCampaign" v-on:click="toggleSessionScheduleDialog">New Session</button>
             </div>
         </template>
     </VCalendar>
