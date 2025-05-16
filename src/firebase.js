@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
 import { getAnalytics } from 'firebase/analytics';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 const firebaseConfig = {
     apiKey: 'AIzaSyDnI2sHUYjFXyIqtWCe4KypG-_K5d2QnY0',
@@ -16,5 +17,21 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const analytics = getAnalytics(app);
+
+let appCheck;
+
+if (import.meta.env.DEV) {
+    appCheck = initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider('6LdDeT0rAAAAAA0rkF91bsn368tm2drnf7zDbW9v'),
+        isTokenAutoRefreshEnabled: true,
+        token: import.meta.env.VITE_FIREBASE_APPCHECK_DEBUG_TOKEN,
+    });
+    console.log('Firebase App Check initialized with debug token.');
+} else {
+    appCheck = initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider('6LdDeT0rAAAAAA0rkF91bsn368tm2drnf7zDbW9v'),
+        isTokenAutoRefreshEnabled: true,
+    });
+}
 
 export { app, db };
