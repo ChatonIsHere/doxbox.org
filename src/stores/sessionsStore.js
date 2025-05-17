@@ -2,10 +2,12 @@ import { defineStore } from 'pinia';
 import { ref, onUnmounted, computed } from 'vue';
 import { getDatabase, ref as dbRef, onValue, update, push, query, orderByChild } from 'firebase/database';
 import { useAuthStore } from '@/stores/authStore';
+import { useToastStore } from '@/stores/toastStore';
 
 export const useSessionsStore = defineStore('sessions', () => {
     const db = getDatabase();
     const authStore = useAuthStore();
+    const toastStore = useToastStore();
 
     const campaigns = ref(null);
     const history = ref(null);
@@ -173,19 +175,36 @@ export const useSessionsStore = defineStore('sessions', () => {
         return availabilityArray;
     };
 
-    const updateAvailability = (sessionID, sessionavailabilityType) => {
+    const updateAvailability = async (sessionID, sessionavailabilityType) => {
         const { userExtended } = authStore;
         if (userExtended && userExtended.discordID) {
-            update(dbRef(db, `sessions/upcoming/${sessionID}/availability/`), {
-                [userExtended.discordID]: sessionavailabilityType,
-            });
+            try {
+                await update(dbRef(db, `sessions/upcoming/${sessionID}/availability/`), {
+                    [userExtended.discordID]: sessionavailabilityType,
+                });
+                toastStore.addToast({ message: 'Availability updated successfully!', backgroundClass: 'bg-success' });
+            } catch (error) {
+                console.error('Error updating availability:', error);
+                toastStore.addToast({ message: 'Failed to update availability.', backgroundClass: 'bg-danger' });
+            }
         } else {
             console.warn('User data not loaded. Cannot update availability.');
+            toastStore.addToast({ message: 'User data not loaded. Cannot update availability.', backgroundClass: 'bg-danger' });
         }
     };
 
-    const cancelSession = (sessionID) => {
-        if (sessionID !== '') update(dbRef(db, `sessions/upcoming/`), { [sessionID]: null });
+    const cancelSession = async (sessionID) => {
+        if (sessionID !== '') {
+            try {
+                await update(dbRef(db, `sessions/upcoming/`), { [sessionID]: null });
+                toastStore.addToast({ message: 'Session cancelled successfully!', backgroundClass: 'bg-success' });
+            } catch (error) {
+                console.error('Error cancelling session:', error);
+                toastStore.addToast({ message: 'Failed to cancel session.', backgroundClass: 'bg-danger' });
+            }
+        } else {
+            toastStore.addToast({ message: 'Invalid session ID.', backgroundClass: 'bg-danger' });
+        }
     };
 
     const formatDate = (date) => {
@@ -193,35 +212,56 @@ export const useSessionsStore = defineStore('sessions', () => {
         return `${targetDate.getFullYear()}-${targetDate.getMonth() + 1}-${targetDate.getDate()}`;
     };
 
-    const scheduleNewSession = (campaignId, date, userId) => {
+    const scheduleNewSession = async (campaignId, date, userId) => {
         const existingSession = allSessions.value.find((session) => session.date === formatDate(date));
 
         if (existingSession) {
             console.warn(`There is already a session scheduled for ${formatDate(date)}`);
+            toastStore.addToast({ message: `There is already a session scheduled for ${formatDate(date)}`, backgroundClass: 'bg-warning' });
             return false;
         }
 
         if (userId) {
-            push(upcomingSessionsRef, {
-                campaign: campaignId,
-                date: formatDate(date),
-                availability: {
-                    [userId]: 'available',
-                },
-            });
-            return true;
+            try {
+                await push(upcomingSessionsRef, {
+                    campaign: campaignId,
+                    date: formatDate(date),
+                    availability: {
+                        [userId]: 'available',
+                    },
+                });
+                toastStore.addToast({ message: 'Session scheduled successfully!', backgroundClass: 'bg-success' });
+                return true;
+            } catch (error) {
+                console.error('Error scheduling new session:', error);
+                toastStore.addToast({ message: 'Failed to schedule new session.', backgroundClass: 'bg-danger' });
+                return false;
+            }
         } else {
             console.warn('User ID not available. Cannot schedule session.');
+            toastStore.addToast({ message: 'User data not loaded. Cannot schedule session.', backgroundClass: 'bg-danger' });
             return false;
         }
     };
 
-    const updateSessionDay = (campaignId, dayIndex) => {
-        update(dbRef(db, `quinn/campaigns/${campaignId}/`), { sessionDay: dayIndex });
+    const updateSessionDay = async (campaignId, dayIndex) => {
+        try {
+            await update(dbRef(db, `quinn/campaigns/${campaignId}/`), { sessionDay: dayIndex });
+            toastStore.addToast({ message: 'Session day updated successfully!', backgroundClass: 'bg-success' });
+        } catch (error) {
+            console.error('Error updating session day:', error);
+            toastStore.addToast({ message: 'Failed to update session day.', backgroundClass: 'bg-danger' });
+        }
     };
 
-    const resetSessionDay = (campaignId) => {
-        update(dbRef(db, `quinn/campaigns/${campaignId}/`), { sessionDay: null });
+    const resetSessionDay = async (campaignId) => {
+        try {
+            await update(dbRef(db, `quinn/campaigns/${campaignId}/`), { sessionDay: null });
+            toastStore.addToast({ message: 'Session day reset successfully!', backgroundClass: 'bg-success' });
+        } catch (error) {
+            console.error('Error resetting session day:', error);
+            toastStore.addToast({ message: 'Failed to reset session day.', backgroundClass: 'bg-danger' });
+        }
     };
 
     return {
@@ -229,10 +269,12 @@ export const useSessionsStore = defineStore('sessions', () => {
         history,
         upcomingSessions,
         discordUsernames,
+
         dmsCampaign,
         playerCampaigns,
         allSessions,
         sortedUpcomingSessions,
+
         campaignFromID,
         usernameFromDiscordID,
         sessionDateString,

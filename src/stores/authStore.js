@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { getAuth, onAuthStateChanged, signInWithPopup, signOut, GoogleAuthProvider } from 'firebase/auth';
 import { getDatabase, ref as dbRef, get, update } from 'firebase/database';
 import { useToastStore } from '@/stores/toastStore';
+import { useRouter } from 'vue-router';
 
 const googleAuthProvider = new GoogleAuthProvider();
 
@@ -15,6 +16,7 @@ export const useAuthStore = defineStore(
         const authInitialized = ref(false);
 
         const toastStore = useToastStore();
+        const router = useRouter();
 
         const initAuthListener = () => {
             const auth = getAuth();
@@ -106,6 +108,7 @@ export const useAuthStore = defineStore(
                 store.$reset();
 
                 toastStore.addToast({ message: 'Signed out successfully.', backgroundClass: 'bg-success' });
+                router.push('/');
             } catch (error) {
                 console.error('Error signing out:', error);
                 toastStore.addToast({ message: 'Failed to sign out. Please try again.', backgroundClass: 'bg-danger' });
