@@ -2,7 +2,7 @@
     import { computed } from 'vue';
     import { useAuthStore } from '@/stores/authStore';
 
-    import ClickCopy from '../components/ClickCopy.vue';
+    import ClickCopy from '@/components/ClickCopy.vue';
 
     const authStore = useAuthStore();
     const { user, claims } = authStore;

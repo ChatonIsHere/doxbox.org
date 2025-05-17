@@ -1,8 +1,8 @@
 <script setup>
     import { computed } from 'vue';
     import { useAuthStore } from '@/stores/authStore';
-    import NoLinkedDiscord from '../components/NoLinkedDiscord.vue';
-    import ClickCopy from '../components/ClickCopy.vue';
+    import NoLinkedDiscord from '@/components/NoLinkedDiscord.vue';
+    import ClickCopy from '@/components/ClickCopy.vue';
 
     const authStore = useAuthStore();
     const user = computed(() => authStore.user);

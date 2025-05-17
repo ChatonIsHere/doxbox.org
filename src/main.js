@@ -4,6 +4,8 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import App from './App.vue';
 import router from './router';
 
+import { app as firebaseApp } from './firebase';
+
 import * as bootstrap from 'bootstrap';
 
 import Particles from '@tsparticles/vue3';

@@ -1,6 +1,6 @@
 <script setup>
-    import navbar from './components/Navbar.vue';
-    import particleConfig from './assets/particles.json';
+    import navbar from '@/components/Navbar.vue';
+    import particleConfig from '@/assets/particles.json';
 
     import ToastContainer from '@/components/ToastContainer.vue';
 

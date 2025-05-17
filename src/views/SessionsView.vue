@@ -4,10 +4,10 @@
     import { useAuthStore } from '@/stores/authStore';
     import { storeToRefs } from 'pinia';
 
-    import SessionDayDropdown from '../components/Sessions/SessionDayDropdown.vue';
-    import UpcomingSessions from '../components/Sessions/UpcomingSessions.vue';
-    import SessionsCalendar from '../components/Sessions/SessionsCalendar.vue';
-    import CampaignsBar from '../components/Sessions/CampaignsBar.vue';
+    import SessionDayDropdown from '@/components/Sessions/SessionDayDropdown.vue';
+    import UpcomingSessions from '@/components/Sessions/UpcomingSessions.vue';
+    import SessionsCalendar from '@/components/Sessions/SessionsCalendar.vue';
+    import CampaignsBar from '@/components/Sessions/CampaignsBar.vue';
 
     const db = getDatabase();
 

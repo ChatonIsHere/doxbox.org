@@ -1,7 +1,7 @@
 <script setup>
     import { computed, ref } from 'vue';
     import { useAuthStore } from '@/stores/authStore';
-    import NoLinkedDiscord from '../components/NoLinkedDiscord.vue';
+    import NoLinkedDiscord from '@/components/NoLinkedDiscord.vue';
     import { useToastStore } from '@/stores/toastStore';
     import { storeToRefs } from 'pinia';
 

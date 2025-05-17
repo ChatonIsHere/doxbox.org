@@ -1,6 +1,6 @@
 <script setup>
     import { ref, onUnmounted } from 'vue';
-    import GameserverCard from '../components/GameserverCard.vue';
+    import GameserverCard from '@/components/GameserverCard.vue';
     import { getDatabase, ref as dbRef, onValue } from 'firebase/database';
     import { useAuthStore } from '@/stores/authStore';
     import { storeToRefs } from 'pinia';
