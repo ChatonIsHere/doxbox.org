@@ -2,6 +2,8 @@
     import navbar from './components/Navbar.vue';
     import particleConfig from './assets/particles.json';
 
+    import ToastContainer from '@/components/ToastContainer.vue';
+
     const particlesLoaded = async (container) => {
         console.log('Particles container loaded', container);
     };
@@ -15,4 +17,5 @@
             <router-view></router-view>
         </main>
     </div>
+    <ToastContainer />
 </template>

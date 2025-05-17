@@ -4,14 +4,17 @@
     import { ref as dbRef, update, getDatabase, get } from 'firebase/database';
     import { useCurrentExtendedUser } from '@/composables/useCurrentExtendedUser';
     import NoLinkedDiscord from '../components/NoLinkedDiscord.vue';
-    import ClickCopy from '../components/ClickCopy.vue';
     import { getAuth } from 'firebase/auth';
+    import { useToastStore } from '@/stores/toastStore';
+
+    const appVersion = __APP_VERSION__;
 
     const db = useDatabase();
     const { user, userExtended } = useCurrentExtendedUser();
+    const toastStore = useToastStore();
 
     function generateSecureRandomString(length) {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01256789';
         const charactersLength = characters.length;
         let result = '';
 
@@ -27,28 +30,14 @@
 
     const generatedApiKey = ref('');
     const isGenerating = ref(false);
-    const isRevoking = ref(false); // Added for revoke button loading state
-    const errorMessage = ref('');
-    const successMessage = ref('');
-
-    let messageTimeoutId = null; // Added for message timeout
-
-    const clearMessages = () => {
-        errorMessage.value = '';
-        successMessage.value = '';
-    };
+    const isRevoking = ref(false);
 
     const setMessageWithTimeout = (type, message, duration = 5000) => {
-        clearTimeout(messageTimeoutId);
-        clearMessages(); // Clear previous message immediately
-
         if (type === 'error') {
-            errorMessage.value = message;
+            toastStore.addToast({ message, backgroundClass: 'bg-danger', duration });
         } else if (type === 'success') {
-            successMessage.value = message;
+            toastStore.addToast({ message, backgroundClass: 'bg-success', duration });
         }
-
-        messageTimeoutId = setTimeout(clearMessages, duration);
     };
 
     const hasApiKey = computed(() => {
@@ -56,8 +45,10 @@
     });
 
     const generateApiKey = async () => {
+        const alreadyHadKey = !!hasApiKey.value;
+
         // Added confirmation, but only for regeneration
-        if (hasApiKey.value && !confirm('Are you sure you want to regenerate your API key?')) {
+        if (alreadyHadKey && !confirm('Are you sure you want to regenerate your API key?')) {
             return;
         }
 
@@ -67,7 +58,7 @@
         }
 
         isGenerating.value = true;
-        clearMessages(); // Clear messages before starting
+        // clearMessages(); // No longer needed with toast store
         generatedApiKey.value = '';
 
         try {
@@ -95,7 +86,7 @@
             }
 
             generatedApiKey.value = newApiKey;
-            setMessageWithTimeout('success', hasApiKey.value ? 'API Key regenerated successfully!' : 'API Key generated successfully!');
+            setMessageWithTimeout('success', hasApiKey.value ? `API Key ${alreadyHadKey ? 're' : ''}generated successfully!` : 'API Key generated successfully!');
         } catch (error) {
             console.error('Error generating API key:', error);
             setMessageWithTimeout('error', 'Failed to generate API key. Please try again.');
@@ -117,7 +108,7 @@
         }
 
         isRevoking.value = true;
-        clearMessages(); // Clear messages before starting
+        // clearMessages(); // No longer needed with toast store
 
         try {
             const userRef = dbRef(db, `users/${user.value.uid}`);
@@ -171,8 +162,9 @@
                     <button v-if="hasApiKey" class="btn btn-danger" type="button" id="revoke-apikey-button" @click="revokeApiKey" :disabled="isRevoking || isGenerating">Revoke API Key</button>
                 </div>
                 <!-- Messages will disappear due to timeout logic -->
-                <p v-if="errorMessage" class="text-danger mt-3">{{ errorMessage }}</p>
-                <p v-if="successMessage" class="text-success mt-3">{{ successMessage }}</p>
+                <!-- Remove the message display paragraphs -->
+                <!-- <p v-if="errorMessage" class="text-danger mt-3">{{ errorMessage }}</p> -->
+                <!-- <p v-if="successMessage" class="text-success mt-3">{{ successMessage }}</p> -->
             </div>
         </div>
     </div>
