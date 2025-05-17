@@ -1,6 +1,7 @@
 import { fileURLToPath, URL } from 'node:url';
 import { resolve } from 'path';
 import { version } from './package.json';
+import fs from 'fs';
 
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
@@ -14,7 +15,7 @@ export default defineConfig({
             apply: 'build',
             buildEnd() {
                 const versionData = { version };
-                const outputPath = path.resolve(__dirname, 'public', 'version.json');
+                const outputPath = resolve(__dirname, 'public', 'version.json');
                 fs.writeFileSync(outputPath, JSON.stringify(versionData, null, 2));
                 console.log(`Generated version.json at ${outputPath}`);
             },
