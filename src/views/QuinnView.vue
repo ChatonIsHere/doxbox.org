@@ -1,30 +1,9 @@
 <script setup>
-    import { ref, onUnmounted } from 'vue';
-    import { getDatabase, ref as dbRef, onValue } from 'firebase/database';
+    import { useQuinnStore } from '@/stores/quinnStore';
+    import { storeToRefs } from 'pinia';
 
-    const db = getDatabase();
-
-    const usernames = ref(null);
-    const usernamesRef = dbRef(db, 'quinn/userData/username');
-    const unsubscribeUsernames = onValue(usernamesRef, (snapshot) => {
-        usernames.value = snapshot.val();
-    });
-
-    const players = ref([]);
-    const playersRef = dbRef(db, 'quinn/userData/d20');
-    const unsubscribePlayers = onValue(playersRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            players.value = Object.entries(data).map(([id, value]) => ({ id, ...value }));
-        } else {
-            players.value = [];
-        }
-    });
-
-    onUnmounted(() => {
-        unsubscribeUsernames();
-        unsubscribePlayers();
-    });
+    const quinnStore = useQuinnStore();
+    const { usernames, players } = storeToRefs(quinnStore);
 
     const discordUsername = (userID) => {
         let username = usernames.value ? usernames.value[userID] : undefined;
