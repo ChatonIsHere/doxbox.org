@@ -1,7 +1,6 @@
 <script setup>
-    import { computed, ref, onUnmounted } from 'vue';
-    import { getDatabase, ref as dbRef, onValue } from 'firebase/database';
     import { useAuthStore } from '@/stores/authStore';
+    import { useSessionsStore } from '@/stores/sessionsStore';
     import { storeToRefs } from 'pinia';
 
     import SessionDayDropdown from '@/components/Sessions/SessionDayDropdown.vue';
@@ -9,26 +8,8 @@
     import SessionsCalendar from '@/components/Sessions/SessionsCalendar.vue';
     import CampaignsBar from '@/components/Sessions/CampaignsBar.vue';
 
-    const db = getDatabase();
-
-    const campaigns = ref(null);
-    const campaignsRef = dbRef(db, `quinn/campaigns/`);
-    const unsubscribeCampaigns = onValue(campaignsRef, (snapshot) => {
-        campaigns.value = snapshot.val();
-    });
-
-    onUnmounted(() => {
-        unsubscribeCampaigns();
-    });
-
-    const authStore = useAuthStore();
-    const { user, userExtended } = storeToRefs(authStore);
-
-    const dmsCampaign = computed(() => {
-        if (typeof campaigns.value !== 'undefined' && campaigns.value !== null && userExtended.value && typeof userExtended.value.dmCampaign !== 'undefined') {
-            return campaigns.value[userExtended.value.dmCampaign];
-        } else return false;
-    });
+    const sessionsStore = useSessionsStore();
+    const { dmsCampaign } = storeToRefs(sessionsStore);
 </script>
 
 <template>
@@ -52,3 +33,34 @@
         </div>
     </div>
 </template>
+
+<style>
+    hr.thin {
+        margin-top: 0.5em;
+        margin-bottom: 0.5em;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .card {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .form-control.bg-secondary {
+        background-color: #6c757d !important;
+    }
+
+    .form-control.bg-secondary::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .form-control.bg-secondary:focus {
+        background-color: #6c757d !important;
+        color: white !important;
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    --bs-table-bg {
+        background-color: transparent !important;
+    }
+</style>

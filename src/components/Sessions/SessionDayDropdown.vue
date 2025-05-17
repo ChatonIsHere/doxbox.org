@@ -1,23 +1,20 @@
 <script setup>
     import { computed } from 'vue';
-    import { getDatabase, ref as dbRef, update } from 'firebase/database';
-
-    const db = getDatabase();
+    import { useSessionsStore } from '@/stores/sessionsStore';
 
     const { campaign } = defineProps(['campaign']);
+
+    const sessionsStore = useSessionsStore();
+    const { updateSessionDay, resetSessionDay } = sessionsStore;
 
     const sessionDayModel = computed({
         get() {
             return campaign.sessionDay;
         },
         set(value) {
-            update(dbRef(db, `quinn/campaigns/${campaign.id}/`), { sessionDay: value });
+            updateSessionDay(campaign.id, value);
         },
     });
-
-    const resetSessionDay = () => {
-        update(dbRef(db, `quinn/campaigns/${campaign.id}/`), { sessionDay: null });
-    };
 
     const week = ['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays', 'Sundays'];
 </script>
@@ -28,7 +25,7 @@
             <option v-for="day in Object.entries(week)" :value="day[0]">{{ day[1] }}</option>
         </select>
         <div class="input-group-append">
-            <button class="input-group-text bg-danger" id="btnGroupAddon" for="daySelector" v-on:click="resetSessionDay">X</button>
+            <button class="input-group-text bg-danger" id="btnGroupAddon" for="daySelector" v-on:click="resetSessionDay(campaign.id)">X</button>
         </div>
     </div>
 </template>

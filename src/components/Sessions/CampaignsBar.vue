@@ -1,46 +1,9 @@
 <script setup>
-    import { computed, ref, onUnmounted } from 'vue';
-    import { getDatabase, ref as dbRef, onValue } from 'firebase/database';
-    import { useAuthStore } from '@/stores/authStore';
+    import { useSessionsStore } from '@/stores/sessionsStore';
     import { storeToRefs } from 'pinia';
 
-    const db = getDatabase();
-
-    const campaigns = ref(null);
-    const campaignsRef = dbRef(db, `quinn/campaigns/`);
-    const unsubscribeCampaigns = onValue(campaignsRef, (snapshot) => {
-        campaigns.value = snapshot.val();
-    });
-
-    const discordUsernames = ref(null);
-    const usernamesRef = dbRef(db, `quinn/userData/username/`);
-    const unsubscribeUsernames = onValue(usernamesRef, (snapshot) => {
-        discordUsernames.value = snapshot.val();
-    });
-
-    onUnmounted(() => {
-        unsubscribeCampaigns();
-        unsubscribeUsernames();
-    });
-
-    const authStore = useAuthStore();
-    const { user, userExtended } = storeToRefs(authStore);
-
-    const playerCampaigns = computed(() => {
-        if (typeof campaigns.value !== 'undefined' && campaigns.value !== null && userExtended.value && typeof userExtended.value.discordID !== 'undefined') {
-            return Object.values(campaigns.value).filter((campaign) => {
-                if (campaign.dm == userExtended.value.discordID) return true;
-
-                if (typeof campaign.players !== 'undefined') {
-                    return Object.keys(campaign.players).includes(userExtended.value.discordID);
-                }
-            });
-        } else return [];
-    });
-
-    const usernameFromDiscordID = (discordID) => {
-        return typeof discordUsernames.value !== 'undefined' && discordUsernames.value !== null ? discordUsernames.value[discordID] : discordID;
-    };
+    const sessionsStore = useSessionsStore();
+    const { playerCampaigns } = storeToRefs(sessionsStore);
 </script>
 
 <template>
@@ -56,13 +19,13 @@
                         <li class="list-group-item">
                             <h5>DM</h5>
                             <ul class="list-unstyled">
-                                <li>{{ usernameFromDiscordID(campaign.dm) }}</li>
+                                <li>{{ sessionsStore.usernameFromDiscordID(campaign.dm) }}</li>
                             </ul>
                         </li>
                         <li class="list-group-item">
                             <h5>Players</h5>
                             <ul class="list-unstyled">
-                                <li v-for="player in Object.keys(campaign.players || {})" :key="player">{{ usernameFromDiscordID(player) }}</li>
+                                <li v-for="player in Object.keys(campaign.players || {})" :key="player">{{ sessionsStore.usernameFromDiscordID(player) }}</li>
                             </ul>
                         </li>
                     </ul>

@@ -1,37 +1,15 @@
 <script setup>
-    import { computed, ref, watch, onUnmounted } from 'vue';
-    import { getDatabase, ref as dbRef, onValue, push } from 'firebase/database';
+    import { computed, ref, watch } from 'vue';
     import { useAuthStore } from '@/stores/authStore';
+    import { useSessionsStore } from '@/stores/sessionsStore';
     import { storeToRefs } from 'pinia';
 
-    const db = getDatabase();
-
-    const campaigns = ref(null);
-    const campaignsRef = dbRef(db, `quinn/campaigns/`);
-    const unsubscribeCampaigns = onValue(campaignsRef, (snapshot) => {
-        campaigns.value = snapshot.val();
-    });
-
-    const history = ref(null);
-    const historyRef = dbRef(db, `sessions/history/`);
-    const unsubscribeHistory = onValue(historyRef, (snapshot) => {
-        history.value = snapshot.val();
-    });
-
-    const upcoming = ref(null);
-    const upcomingRef = dbRef(db, `sessions/upcoming/`);
-    const unsubscribeUpcoming = onValue(upcomingRef, (snapshot) => {
-        upcoming.value = snapshot.val();
-    });
-
-    onUnmounted(() => {
-        unsubscribeCampaigns();
-        unsubscribeHistory();
-        unsubscribeUpcoming();
-    });
+    const sessionsStore = useSessionsStore();
+    const { campaigns, allSessions, dmsCampaign } = storeToRefs(sessionsStore);
+    const { scheduleNewSession: storeScheduleNewSession } = sessionsStore;
 
     const authStore = useAuthStore();
-    const { user, userExtended } = storeToRefs(authStore);
+    const { userExtended } = storeToRefs(authStore);
 
     const calendar = ref(null);
 
@@ -58,8 +36,7 @@
         ];
 
         try {
-            let sessions = Object.values(history.value || {});
-            if (upcoming.value !== null) sessions = sessions.concat(Object.values(upcoming.value));
+            let sessions = Object.values(allSessions.value || {});
 
             for (let session of sessions) {
                 let backgroundColor = 'blue';
@@ -118,49 +95,21 @@
         ];
     });
 
-    const dmsCampaign = computed(() => {
-        if (campaigns.value !== null && typeof campaigns.value !== 'undefined' && userExtended.value && typeof userExtended.value.dmCampaign !== 'undefined') return campaigns.value[userExtended.value.dmCampaign];
-        else return false;
-    });
-
     const toggleSessionScheduleDialog = () => {
         if (schedulingNewSession.value) selectedDate.value = 'Please select a date';
         schedulingNewSession.value = !schedulingNewSession.value;
     };
 
-    const formatDate = (date) => {
-        let targetDate = new Date(date);
-        return `${targetDate.getFullYear()}-${targetDate.getMonth() + 1}-${targetDate.getDate()}`;
-    };
-
-    const displaySelectedDate = computed(() => {
-        let dateString = `New session on ${formatDate(selectedDate.value)}`;
-
-        return selectedDate.value == 'Please select a date' ? selectedDate.value : dateString;
-    });
-
     const scheduleNewSession = () => {
-        let sessions = Object.values(history.value || {});
-        if (upcoming.value !== null) sessions = sessions.concat(Object.values(upcoming.value));
+        const success = storeScheduleNewSession(dmsCampaign.value.id, selectedDate.value, userExtended.value?.discordID);
 
-        if (sessions.find((session) => session.date == formatDate(selectedDate.value))) {
-            latestErrorMessage.value = `There is already a session scheduled for ${formatDate(selectedDate.value)}`;
+        if (!success) {
+            latestErrorMessage.value = `Failed to schedule session. There might be an existing session on ${sessionsStore.formatDate(selectedDate.value)} or user data is missing.`;
             setTimeout(() => {
                 latestErrorMessage.value = '';
             }, 15000);
-        } else if (userExtended.value && userExtended.value.discordID) {
-            push(upcomingRef, {
-                campaign: dmsCampaign.value.id,
-                date: formatDate(selectedDate.value),
-                availability: {
-                    [userExtended.value.discordID]: 'available',
-                },
-            });
         } else {
-            latestErrorMessage.value = 'User data not loaded. Cannot schedule session.';
-            setTimeout(() => {
-                latestErrorMessage.value = '';
-            }, 15000);
+            latestErrorMessage.value = '';
         }
 
         toggleSessionScheduleDialog();
