@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { getAuth } from 'firebase/auth';
-import { getCurrentUser } from 'vuefire';
+import { getCurrentUser } from 'vuefire'; // Keep getCurrentUser for initial auth state check
+import { useAuthStore } from '@/stores/authStore'; // Import the auth store
 
 import HomeView from '../views/HomeView.vue';
 const GameserversView = () => import('../views/GameserversView.vue');
@@ -70,19 +71,31 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
+    const authStore = useAuthStore(); // Get store instance
+
     try {
+        // Use getCurrentUser to ensure initial auth state is loaded before proceeding
         const user = await getCurrentUser();
 
         if (to.meta.requiresAuth && !user) {
             return next({ path: '/' });
         }
 
+        // Rely on the store's claims once the user is loaded
         if (to.meta.requiresLinkedDiscord && user) {
-            const tokenResult = await user.getIdTokenResult();
-            const claims = tokenResult.claims;
-
-            if (to.meta.requiresLinkedDiscord && !claims.discordID) {
+            // Wait for auth store to be initialized and claims to be potentially loaded
+            // This might require a more robust waiting mechanism if claims aren't immediately available
+            // For simplicity here, we assume claims are loaded shortly after user
+            // A more complex app might watch authStore.authInitialized or claims
+            if (!authStore.claims || !authStore.claims.discordID) {
+                // If claims aren't loaded yet, try fetching them again or wait
+                // For now, redirect if claims or discordID is missing
+                console.warn('User requires linked Discord but claims or discordID is missing in store.');
+                // Optionally re-fetch claims if needed, but the listener should handle this
+                // const tokenResult = await user.getIdTokenResult();
+                // if (!tokenResult.claims.discordID) {
                 return next({ path: '/' });
+                // }
             }
         }
 

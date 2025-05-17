@@ -1,17 +1,23 @@
 <script setup>
-    import { computed, ref } from 'vue';
-    import { useDatabase, useDatabaseObject, useCurrentUser } from 'vuefire';
+    import { computed } from 'vue';
+    import { useDatabase, useDatabaseObject } from 'vuefire'; // Removed useCurrentUser
     import { ref as dbRef } from 'firebase/database';
+    import { useAuthStore } from '@/stores/authStore'; // Import auth store
+    import { storeToRefs } from 'pinia'; // Import storeToRefs
 
     const db = useDatabase();
-    const user = useCurrentUser();
+    // const user = useCurrentUser(); // Removed
 
     const campaigns = useDatabaseObject(dbRef(db, `quinn/campaigns/`));
     const discordUsernames = useDatabaseObject(dbRef(db, `quinn/userData/username/`));
-    const userExtended = useDatabaseObject(dbRef(db, `users/${user.value.uid}/`));
+    // const userExtended = useDatabaseObject(dbRef(db, `users/${user.value.uid}/`)); // Removed
+
+    const authStore = useAuthStore(); // Get store instance
+    const { user, userExtended } = storeToRefs(authStore); // Use storeToRefs for user and userExtended
 
     const playerCampaigns = computed(() => {
-        if (typeof campaigns.value !== 'undefined' && typeof userExtended.value !== 'undefined') {
+        // Use userExtended from the store
+        if (typeof campaigns.value !== 'undefined' && userExtended.value && typeof userExtended.value.discordID !== 'undefined') {
             return Object.values(campaigns.value).filter((campaign) => {
                 if (campaign.dm == userExtended.value.discordID) return true;
 
@@ -19,7 +25,7 @@
                     return Object.keys(campaign.players).includes(userExtended.value.discordID);
                 }
             });
-        } else return false;
+        } else return []; // Return empty array if data is not ready
     });
 
     const usernameFromDiscordID = (discordID) => {
@@ -30,6 +36,7 @@
 <template>
     <div class="container">
         <div class="row justify-content-center">
+            <!-- Ensure playerCampaigns is an array before iterating -->
             <div class="col-12 col-md-6 col-lg-4 col-xl-2 pb-2" v-for="campaign in playerCampaigns" :key="campaign.id">
                 <div class="card h-100 d-flex flex-column">
                     <div class="card-header p-3">

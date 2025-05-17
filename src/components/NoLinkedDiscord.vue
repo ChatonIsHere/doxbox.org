@@ -1,12 +1,12 @@
 <script setup>
     import { computed } from 'vue';
-    import { useDatabase } from 'vuefire';
-    import { useCurrentExtendedUser } from '@/composables/useCurrentExtendedUser';
+    import { useAuthStore } from '@/stores/authStore';
 
     import ClickCopy from '../components/ClickCopy.vue';
 
-    const db = useDatabase();
-    const { user, claims } = useCurrentExtendedUser();
+    const authStore = useAuthStore();
+    const { user, claims } = authStore;
+
     const userID = computed(() => (user.value ? user.value.uid : null));
 </script>
 

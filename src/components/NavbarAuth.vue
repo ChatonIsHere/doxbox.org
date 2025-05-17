@@ -1,44 +1,32 @@
-<script>
-    import { GoogleAuthProvider } from 'firebase/auth';
-    export const googleAuthProvider = new GoogleAuthProvider();
-</script>
-
 <script setup>
+    import { storeToRefs } from 'pinia'; // Import storeToRefs
     import { signInWithPopup, signOut } from 'firebase/auth';
-    import { ref as dbRef, update } from 'firebase/database';
-    import { useCurrentUser, useFirebaseAuth, useDatabase } from 'vuefire';
+    import { useAuthStore } from '@/stores/authStore';
     import { useRouter } from 'vue-router';
 
-    const auth = useFirebaseAuth();
-    const user = useCurrentUser();
-    const db = useDatabase();
     const router = useRouter();
+    const authStore = useAuthStore();
+    const { user } = storeToRefs(authStore); // Use storeToRefs for user
+    const { signInWithGoogle, signOutUser } = authStore; // Actions don't need storeToRefs
 
-    const signinPopup = () => {
-        signInWithPopup(auth, googleAuthProvider)
-            .then((result) => {
-                router.push('/');
-                update(dbRef(db, `users/${result.user.uid}/`), {
-                    displayName: result.user.displayName,
-                    email: result.user.email,
-                    lastLogon: Date(),
-                });
-            })
-            .catch((error) => {
-                if (error.code === 'auth/admin-restricted-operation') console.log(`${error.customData.email} is not authorised`);
-                else console.error(error);
-            });
+    const signinPopup = async () => {
+        try {
+            await signInWithGoogle(); // Call the store action
+            router.push('/');
+        } catch (error) {
+            // Error handling is done in the store, but router push might need adjustment
+            console.error('Component caught error during signin:', error);
+        }
     };
 
-    const signOutButton = () => {
-        signOut(auth)
-            .then(() => {
-                router.push('/');
-            })
-            .catch((error) => {
-                console.error(error);
-                router.push('/');
-            });
+    const signOutButton = async () => {
+        try {
+            await signOutUser(); // Call the store action
+            router.push('/');
+        } catch (error) {
+            // Error handling is done in the store
+            console.error('Component caught error during signout:', error);
+        }
     };
 </script>
 

@@ -1,10 +1,12 @@
 <script setup>
     import { computed, ref, watch } from 'vue';
-    import { useDatabase, useDatabaseObject, useCurrentUser } from 'vuefire';
+    import { useDatabase, useDatabaseObject } from 'vuefire'; // Removed useCurrentUser
     import { ref as dbRef, push } from 'firebase/database';
+    import { useAuthStore } from '@/stores/authStore'; // Import auth store
+    import { storeToRefs } from 'pinia'; // Import storeToRefs
 
     const db = useDatabase();
-    const user = useCurrentUser();
+    // const user = useCurrentUser(); // Removed
 
     const campaigns = useDatabaseObject(dbRef(db, `quinn/campaigns/`));
     const history = useDatabaseObject(dbRef(db, `sessions/history/`));
@@ -12,7 +14,10 @@
     const upcomingRef = dbRef(db, `sessions/upcoming/`);
     const upcoming = useDatabaseObject(upcomingRef);
 
-    const userExtended = useDatabaseObject(dbRef(db, `users/${user.value.uid}/`));
+    // const userExtended = useDatabaseObject(dbRef(db, `users/${user.value.uid}/`)); // Removed
+
+    const authStore = useAuthStore(); // Get store instance
+    const { user, userExtended } = storeToRefs(authStore); // Use storeToRefs for user and userExtended
 
     const calendar = ref(null);
 
@@ -39,7 +44,7 @@
         ];
 
         try {
-            let sessions = Object.values(history.value);
+            let sessions = Object.values(history.value || {}); // Handle null/undefined
             if (upcoming.value !== null) sessions = sessions.concat(Object.values(upcoming.value));
 
             for (let session of sessions) {
@@ -48,7 +53,8 @@
                 let label = 'Unknown campaign';
 
                 try {
-                    if (typeof campaigns.value[session.campaign].calendar !== 'undefined') {
+                    // Ensure campaigns.value and campaigns.value[session.campaign] exist
+                    if (campaigns.value && campaigns.value[session.campaign] && typeof campaigns.value[session.campaign].calendar !== 'undefined') {
                         backgroundColor = campaigns.value[session.campaign].calendar.color;
                         fillMode = campaigns.value[session.campaign].calendar.style;
                         label = campaigns.value[session.campaign].name;
@@ -75,16 +81,21 @@
     const disabledDates = computed(() => {
         let weekdays = [];
 
+        // Use userExtended from the store
         try {
-            let availability = Object.values(userExtended.value.availability);
+            if (userExtended.value && userExtended.value.availability) {
+                let availability = Object.values(userExtended.value.availability);
 
-            for (let i = 0; i < 7; i++) {
-                if (!availability[i]) {
-                    if (i == 6) weekdays.push(1);
-                    else weekdays.push(i + 2);
+                for (let i = 0; i < 7; i++) {
+                    if (!availability[i]) {
+                        if (i == 6) weekdays.push(1);
+                        else weekdays.push(i + 2);
+                    }
                 }
             }
-        } catch (err) {}
+        } catch (err) {
+            console.error(err); // Log other errors
+        }
 
         return [
             {
@@ -96,7 +107,8 @@
     });
 
     const dmsCampaign = computed(() => {
-        if (typeof campaigns.value !== 'undefined' && typeof userExtended.value !== 'undefined') return campaigns.value[userExtended.value.dmCampaign];
+        // Use userExtended from the store
+        if (campaigns.value !== null && typeof campaigns.value !== 'undefined' && userExtended.value && typeof userExtended.value.dmCampaign !== 'undefined') return campaigns.value[userExtended.value.dmCampaign];
         else return false;
     });
 
@@ -117,22 +129,29 @@
     });
 
     const scheduleNewSession = () => {
-        let sessions = Object.values(history.value);
+        let sessions = Object.values(history.value || {}); // Handle null/undefined
         if (upcoming.value !== null) sessions = sessions.concat(Object.values(upcoming.value));
 
+        // Use userExtended from the store
         if (sessions.find((session) => session.date == formatDate(selectedDate.value))) {
             latestErrorMessage.value = `There is already a session scheduled for ${formatDate(selectedDate.value)}`;
             setTimeout(() => {
                 latestErrorMessage.value = '';
             }, 15000);
-        } else {
+        } else if (userExtended.value && userExtended.value.discordID) {
+            // Ensure userExtended and discordID exist
             push(upcomingRef, {
                 campaign: dmsCampaign.value.id,
                 date: formatDate(selectedDate.value),
                 availability: {
-                    [userExtended.value.discordID]: 'available',
+                    [userExtended.value.discordID]: 'available', // Use userExtended from the store
                 },
             });
+        } else {
+            latestErrorMessage.value = 'User data not loaded. Cannot schedule session.';
+            setTimeout(() => {
+                latestErrorMessage.value = '';
+            }, 15000);
         }
 
         toggleSessionScheduleDialog();
@@ -169,7 +188,8 @@
             <div class="mx-2">
                 <p v-if="selectedDate == 'Please select a date'">Please select a date</p>
                 <div v-else>
-                    <p class="pb-0 mb-0">New {{ dmsCampaign.name }} session on</p>
+                    <p class="pb-0 mb-0">New {{ dmsCampaign ? dmsCampaign.name : 'Unknown Campaign' }} session on</p>
+                    <!-- Added check for dmsCampaign -->
                     <p class="pt-0 mt-0">{{ newSessionDateString }}</p>
                 </div>
             </div>

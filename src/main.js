@@ -17,6 +17,8 @@ import 'v-calendar/style.css';
 
 import './assets/main.scss';
 
+import { useAuthStore } from '@/stores/authStore';
+
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
 
@@ -38,5 +40,8 @@ app.use(Particles, {
 });
 
 app.use(pinia);
+
+const authStore = useAuthStore();
+authStore.initAuthListener();
 
 app.mount('#app');

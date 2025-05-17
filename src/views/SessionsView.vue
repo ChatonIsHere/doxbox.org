@@ -3,10 +3,10 @@
     import { useDatabase, useCurrentUser, useDatabaseObject } from 'vuefire';
     import { ref as dbRef } from 'firebase/database';
 
-    import SessionDayDropdown from '../components/SessionDayDropdown.vue';
-    import UpcomingSessions from '../components/UpcomingSessions.vue';
-    import SessionsCalendar from '../components/SessionsCalendar.vue';
-    import CampaignsBar from '../components/CampaignsBar.vue';
+    import SessionDayDropdown from '../components/Sessions/SessionDayDropdown.vue';
+    import UpcomingSessions from '../components/Sessions/UpcomingSessions.vue';
+    import SessionsCalendar from '../components/Sessions/SessionsCalendar.vue';
+    import CampaignsBar from '../components/Sessions/CampaignsBar.vue';
 
     const db = useDatabase();
     const user = useCurrentUser();

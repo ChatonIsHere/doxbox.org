@@ -1,140 +1,81 @@
 <script setup>
     import { computed, ref } from 'vue';
-    import { useDatabase } from 'vuefire';
-    import { ref as dbRef, update, getDatabase, get } from 'firebase/database';
-    import { useCurrentExtendedUser } from '@/composables/useCurrentExtendedUser';
+    // import { useDatabase } from 'vuefire'; // No longer needed here
+    // import { ref as dbRef, update, getDatabase, get } from 'firebase/database'; // No longer needed here
+    // import { useCurrentExtendedUser } from '@/composables/useCurrentExtendedUser'; // Remove this import
+    import { useAuthStore } from '@/stores/authStore'; // Import the auth store
     import NoLinkedDiscord from '../components/NoLinkedDiscord.vue';
-    import { getAuth } from 'firebase/auth';
+    // import { getAuth } from 'firebase/auth'; // No longer needed here
     import { useToastStore } from '@/stores/toastStore';
+    import { storeToRefs } from 'pinia'; // Import storeToRefs
 
     const appVersion = __APP_VERSION__;
 
-    const db = useDatabase();
-    const { user, userExtended } = useCurrentExtendedUser();
+    // const db = useDatabase(); // No longer needed here
+    const authStore = useAuthStore(); // Get store instance
+
+    // Use storeToRefs for reactive state properties
+    const { user, userExtended } = storeToRefs(authStore);
+    // Destructure actions directly (they are not refs)
+    const { generateApiKey: storeGenerateApiKey, revokeApiKey: storeRevokeApiKey } = authStore;
+
     const toastStore = useToastStore();
 
-    function generateSecureRandomString(length) {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01256789';
-        const charactersLength = characters.length;
-        let result = '';
+    // generateSecureRandomString is now in the store, but can be kept here if only used here
+    // function generateSecureRandomString(length) {
+    //     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01256789';
+    //     const charactersLength = characters.length;
+    //     let result = '';
 
-        const randomValues = new Uint8Array(length);
-        crypto.getRandomValues(randomValues);
+    //     const randomValues = new Uint8Array(length);
+    //     crypto.getRandomValues(randomValues);
 
-        for (let i = 0; i < length; i++) {
-            result += characters.charAt(randomValues[i] % charactersLength);
-        }
+    //     for (let i = 0; i < length; i++) {
+    //         result += characters.charAt(randomValues[i] % charactersLength);
+    //     }
 
-        return result;
-    }
+    //     return result;
+    // }
 
-    const generatedApiKey = ref('');
+    const generatedApiKey = ref(''); // Still useful to display the newly generated key temporarily
     const isGenerating = ref(false);
     const isRevoking = ref(false);
 
-    const setMessageWithTimeout = (type, message, duration = 5000) => {
-        if (type === 'error') {
-            toastStore.addToast({ message, backgroundClass: 'bg-danger', duration });
-        } else if (type === 'success') {
-            toastStore.addToast({ message, backgroundClass: 'bg-success', duration });
-        }
-    };
+    // setMessageWithTimeout is now handled by the toastStore directly in the authStore actions
+    // const setMessageWithTimeout = (type, message, duration = 5000) => {
+    //     if (type === 'error') {
+    //         toastStore.addToast({ message, backgroundClass: 'bg-danger', duration });
+    //     } else if (type === 'success') {
+    //         toastStore.addToast({ message, backgroundClass: 'bg-success', duration });
+    //     }
+    // };
 
-    const hasApiKey = computed(() => {
-        return userExtended.value && userExtended.value.apiKey;
-    });
-
+    // Use the action from the store
     const generateApiKey = async () => {
-        const alreadyHadKey = !!hasApiKey.value;
-
-        // Added confirmation, but only for regeneration
-        if (alreadyHadKey && !confirm('Are you sure you want to regenerate your API key?')) {
-            return;
-        }
-
-        if (!user.value || !userExtended.value) {
-            setMessageWithTimeout('error', 'User not logged in or user data not loaded.');
-            return;
-        }
-
         isGenerating.value = true;
-        // clearMessages(); // No longer needed with toast store
-        generatedApiKey.value = '';
+        generatedApiKey.value = ''; // Clear previous generated key display
 
         try {
-            const randomString = generateSecureRandomString(32);
-            const newApiKey = `doxbox_${randomString}`;
-
-            const userRef = dbRef(db, `users/${user.value.uid}`);
-            await update(userRef, { apiKey: newApiKey });
-
-            // Refresh user data after update
-            const auth = getAuth();
-            const currentUser = auth.currentUser;
-
-            if (currentUser) {
-                const database = getDatabase();
-                const updatedUserRef = dbRef(database, `users/${currentUser.uid}`);
-                const updatedUserSnapshot = await get(updatedUserRef);
-
-                if (updatedUserSnapshot.exists()) {
-                    userExtended.value = updatedUserSnapshot.val();
-                } else {
-                    console.log('No such document after update!');
-                    userExtended.value = null;
-                }
+            const newKey = await storeGenerateApiKey(); // Call the store action
+            if (newKey) {
+                generatedApiKey.value = newKey; // Display the new key if generated
             }
-
-            generatedApiKey.value = newApiKey;
-            setMessageWithTimeout('success', hasApiKey.value ? `API Key ${alreadyHadKey ? 're' : ''}generated successfully!` : 'API Key generated successfully!');
         } catch (error) {
-            console.error('Error generating API key:', error);
-            setMessageWithTimeout('error', 'Failed to generate API key. Please try again.');
+            // Error handling is done in the store, but we can log here if needed
+            console.error('Component caught error during API key generation:', error);
         } finally {
             isGenerating.value = false;
         }
     };
 
-    // Added revoke function
+    // Use the action from the store
     const revokeApiKey = async () => {
-        // Added confirmation
-        if (!confirm('Are you sure you want to revoke your API key? This action cannot be undone.')) {
-            return;
-        }
-
-        if (!user.value || !userExtended.value) {
-            setMessageWithTimeout('error', 'User not logged in or user data not loaded.');
-            return;
-        }
-
         isRevoking.value = true;
-        // clearMessages(); // No longer needed with toast store
-
         try {
-            const userRef = dbRef(db, `users/${user.value.uid}`);
-            await update(userRef, { apiKey: null }); // Set apiKey to null
-
-            // Refresh user data after update
-            const auth = getAuth();
-            const currentUser = auth.currentUser;
-
-            if (currentUser) {
-                const database = getDatabase();
-                const updatedUserRef = dbRef(database, `users/${currentUser.uid}`);
-                const updatedUserSnapshot = await get(updatedUserRef);
-
-                if (updatedUserSnapshot.exists()) {
-                    userExtended.value = updatedUserSnapshot.val();
-                } else {
-                    console.log('No such document after update!');
-                    userExtended.value = null;
-                }
-            }
-
-            setMessageWithTimeout('success', 'API Key revoked successfully.');
+            await storeRevokeApiKey(); // Call the store action
         } catch (error) {
-            console.error('Error revoking API key:', error);
-            setMessageWithTimeout('error', 'Failed to revoke API key. Please try again.');
+            // Error handling is done in the store
+            console.error('Component caught error during API key revocation:', error);
         } finally {
             isRevoking.value = false;
         }
@@ -148,23 +89,28 @@
 <template>
     <div class="px-4 py-5 text-center">
         <div class="col-lg-6 mx-auto">
-            <NoLinkedDiscord class="pt-4" />
-
+            <div>
+                <NoLinkedDiscord />
+            </div>
+            <div>
+                <h3 class="fw-bold text-white pb-4">Dox Box Website Version</h3>
+                <p>Version: {{ appVersion }}</p>
+            </div>
+            <hr class="my-5" />
             <div>
                 <h3 class="fw-bold text-white pb-4">Dox Box API Key</h3>
                 <p>This API key is currently only used for the Quinn Shmeppy Extension.</p>
                 <p>Please do not share this with anyone, as it grants access to limited Quinn features remotely.</p>
                 <div class="input-group my-3">
+                    <!-- Display the key from userExtended in the store -->
                     <input type="text" class="form-control" placeholder="Please generate an API key" readonly aria-label="API Key" aria-describedby="generate-apikey-button" :value="userExtended?.apiKey || ''" />
                     <!-- Modified buttons and added revoke button -->
-                    <button v-if="!hasApiKey" class="btn btn-success" type="button" id="generate-apikey-button" @click="generateApiKey" :disabled="isGenerating || isRevoking">Generate API Key</button>
-                    <button v-if="hasApiKey" class="btn btn-warning" type="button" id="generate-apikey-button" @click="generateApiKey" :disabled="isGenerating || isRevoking">Regenerate API Key</button>
-                    <button v-if="hasApiKey" class="btn btn-danger" type="button" id="revoke-apikey-button" @click="revokeApiKey" :disabled="isRevoking || isGenerating">Revoke API Key</button>
+                    <template v-if="userExtended?.apiKey">
+                        <button class="btn btn-warning" type="button" id="generate-apikey-button" @click="generateApiKey" :disabled="isGenerating || isRevoking">Regenerate API Key</button>
+                        <button class="btn btn-danger" type="button" id="revoke-apikey-button" @click="revokeApiKey" :disabled="isRevoking || isGenerating">Revoke API Key</button>
+                    </template>
+                    <button v-else class="btn btn-success" type="button" id="generate-apikey-button" @click="generateApiKey" :disabled="isGenerating || isRevoking">Generate API Key</button>
                 </div>
-                <!-- Messages will disappear due to timeout logic -->
-                <!-- Remove the message display paragraphs -->
-                <!-- <p v-if="errorMessage" class="text-danger mt-3">{{ errorMessage }}</p> -->
-                <!-- <p v-if="successMessage" class="text-success mt-3">{{ successMessage }}</p> -->
             </div>
         </div>
     </div>
