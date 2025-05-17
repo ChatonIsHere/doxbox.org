@@ -1,19 +1,34 @@
 <script setup>
-    import { computed } from 'vue';
-    import { useDatabase, useDatabaseObject } from 'vuefire'; // Removed useCurrentUser
-    import { ref as dbRef, update } from 'firebase/database';
+    import { computed, ref, onUnmounted } from 'vue';
+    import { getDatabase, ref as dbRef, onValue, update } from 'firebase/database';
     import { useAuthStore } from '@/stores/authStore'; // Import auth store
     import { storeToRefs } from 'pinia'; // Import storeToRefs
 
-    const db = useDatabase();
-    // const user = useCurrentUser(); // Removed
+    const db = getDatabase();
 
-    const campaigns = useDatabaseObject(dbRef(db, `quinn/campaigns/`));
-    const upcomingSessions = useDatabaseObject(dbRef(db, `sessions/upcoming/`));
+    const campaigns = ref(null);
+    const campaignsRef = dbRef(db, `quinn/campaigns/`);
+    const unsubscribeCampaigns = onValue(campaignsRef, (snapshot) => {
+        campaigns.value = snapshot.val();
+    });
 
-    // const userExtended = useDatabaseObject(dbRef(db, `users/${user.value.uid}/`)); // Removed
+    const upcomingSessions = ref(null);
+    const upcomingSessionsRef = dbRef(db, `sessions/upcoming/`);
+    const unsubscribeUpcomingSessions = onValue(upcomingSessionsRef, (snapshot) => {
+        upcomingSessions.value = snapshot.val();
+    });
 
-    const discordUsernames = useDatabaseObject(dbRef(db, `quinn/userData/username/`));
+    const discordUsernames = ref(null);
+    const usernamesRef = dbRef(db, `quinn/userData/username/`);
+    const unsubscribeUsernames = onValue(usernamesRef, (snapshot) => {
+        discordUsernames.value = snapshot.val();
+    });
+
+    onUnmounted(() => {
+        unsubscribeCampaigns();
+        unsubscribeUpcomingSessions();
+        unsubscribeUsernames();
+    });
 
     const authStore = useAuthStore(); // Get store instance
     const { user, userExtended } = storeToRefs(authStore); // Use storeToRefs for user and userExtended
@@ -89,12 +104,12 @@
     };
 
     const usernameFromDiscordID = (discordID) => {
-        return typeof discordUsernames.value !== 'undefined' ? discordUsernames.value[discordID] : discordID;
+        return typeof discordUsernames.value !== 'undefined' && discordUsernames.value !== null ? discordUsernames.value[discordID] : discordID;
     };
 
     const getPlayerAvailability = (session) => {
         // Ensure campaigns.value exists and session has availability
-        if (typeof campaigns.value === 'undefined' || typeof session.availability === 'undefined') return false;
+        if (typeof campaigns.value === 'undefined' || campaigns.value === null || typeof session.availability === 'undefined') return false;
 
         let available = {
                 title: 'Available',

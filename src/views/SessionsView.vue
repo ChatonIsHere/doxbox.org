@@ -1,7 +1,6 @@
 <script setup>
-    import { computed } from 'vue';
-    import { useDatabase, useDatabaseObject } from 'vuefire'; // Keep useDatabase, useDatabaseObject
-    import { ref as dbRef } from 'firebase/database'; // Keep ref as dbRef
+    import { computed, ref, onUnmounted } from 'vue';
+    import { getDatabase, ref as dbRef, onValue } from 'firebase/database';
     import { useAuthStore } from '@/stores/authStore'; // Import auth store
     import { storeToRefs } from 'pinia'; // Import storeToRefs
 
@@ -10,12 +9,17 @@
     import SessionsCalendar from '../components/Sessions/SessionsCalendar.vue';
     import CampaignsBar from '../components/Sessions/CampaignsBar.vue';
 
-    const db = useDatabase();
-    // const user = useCurrentUser(); // Removed
+    const db = getDatabase();
 
-    // const userExtended = useDatabaseObject(dbRef(db, `users/${user.value.uid}/`)); // Remove this line
+    const campaigns = ref(null);
+    const campaignsRef = dbRef(db, `quinn/campaigns/`);
+    const unsubscribeCampaigns = onValue(campaignsRef, (snapshot) => {
+        campaigns.value = snapshot.val();
+    });
 
-    const campaigns = useDatabaseObject(dbRef(db, `quinn/campaigns/`));
+    onUnmounted(() => {
+        unsubscribeCampaigns();
+    });
 
     const authStore = useAuthStore(); // Get store instance
     const { user, userExtended } = storeToRefs(authStore); // Use storeToRefs for user and userExtended
@@ -23,7 +27,7 @@
     const dmsCampaign = computed(() => {
         // Use userExtended from the store
         // Ensure userExtended.value exists before accessing dmCampaign
-        if (typeof campaigns.value !== 'undefined' && userExtended.value && typeof userExtended.value.dmCampaign !== 'undefined') {
+        if (typeof campaigns.value !== 'undefined' && campaigns.value !== null && userExtended.value && typeof userExtended.value.dmCampaign !== 'undefined') {
             return campaigns.value[userExtended.value.dmCampaign];
         } else return false;
     });

@@ -1,20 +1,34 @@
 <script setup>
-    import { computed, ref, watch } from 'vue';
-    import { useDatabase, useDatabaseObject } from 'vuefire'; // Removed useCurrentUser
-    import { ref as dbRef, push } from 'firebase/database';
+    import { computed, ref, watch, onUnmounted } from 'vue';
+    import { getDatabase, ref as dbRef, onValue, push } from 'firebase/database';
     import { useAuthStore } from '@/stores/authStore'; // Import auth store
     import { storeToRefs } from 'pinia'; // Import storeToRefs
 
-    const db = useDatabase();
-    // const user = useCurrentUser(); // Removed
+    const db = getDatabase();
 
-    const campaigns = useDatabaseObject(dbRef(db, `quinn/campaigns/`));
-    const history = useDatabaseObject(dbRef(db, `sessions/history/`));
+    const campaigns = ref(null);
+    const campaignsRef = dbRef(db, `quinn/campaigns/`);
+    const unsubscribeCampaigns = onValue(campaignsRef, (snapshot) => {
+        campaigns.value = snapshot.val();
+    });
 
+    const history = ref(null);
+    const historyRef = dbRef(db, `sessions/history/`);
+    const unsubscribeHistory = onValue(historyRef, (snapshot) => {
+        history.value = snapshot.val();
+    });
+
+    const upcoming = ref(null);
     const upcomingRef = dbRef(db, `sessions/upcoming/`);
-    const upcoming = useDatabaseObject(upcomingRef);
+    const unsubscribeUpcoming = onValue(upcomingRef, (snapshot) => {
+        upcoming.value = snapshot.val();
+    });
 
-    // const userExtended = useDatabaseObject(dbRef(db, `users/${user.value.uid}/`)); // Removed
+    onUnmounted(() => {
+        unsubscribeCampaigns();
+        unsubscribeHistory();
+        unsubscribeUpcoming();
+    });
 
     const authStore = useAuthStore(); // Get store instance
     const { user, userExtended } = storeToRefs(authStore); // Use storeToRefs for user and userExtended

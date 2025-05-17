@@ -4,7 +4,6 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import App from './App.vue';
 import router from './router';
 
-import { VueFire } from 'vuefire'; // Remove VueFireAuth
 import { app as firebaseApp } from './firebase';
 
 import * as bootstrap from 'bootstrap';
@@ -25,13 +24,6 @@ pinia.use(piniaPluginPersistedstate);
 const app = createApp(App);
 
 app.use(router);
-
-app.use(VueFire, {
-    firebaseApp,
-    modules: [
-        // Remove VueFireAuth()
-    ],
-});
 
 app.use(VCalendar, {});
 

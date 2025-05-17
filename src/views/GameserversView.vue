@@ -1,13 +1,26 @@
 <script setup>
+    import { ref, onUnmounted } from 'vue';
     import GameserverCard from '../components/GameserverCard.vue';
-    import { useDatabase, useDatabaseList } from 'vuefire'; // Keep useDatabase, useDatabaseList
-    import { ref as dbRef } from 'firebase/database'; // Keep ref as dbRef
+    import { getDatabase, ref as dbRef, onValue } from 'firebase/database';
     import { useAuthStore } from '@/stores/authStore'; // Import auth store
     import { storeToRefs } from 'pinia'; // Import storeToRefs
 
-    const db = useDatabase();
+    const db = getDatabase();
 
-    const gameservers = useDatabaseList(dbRef(db, 'gameservers'));
+    const gameservers = ref([]);
+    const gameserversRef = dbRef(db, 'gameservers');
+    const unsubscribeGameservers = onValue(gameserversRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            gameservers.value = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+        } else {
+            gameservers.value = [];
+        }
+    });
+
+    onUnmounted(() => {
+        unsubscribeGameservers();
+    });
 
     const authStore = useAuthStore(); // Get store instance
     const { user } = storeToRefs(authStore); // Use storeToRefs for user

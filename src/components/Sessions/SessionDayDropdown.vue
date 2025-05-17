@@ -1,9 +1,8 @@
 <script setup>
     import { computed } from 'vue';
-    import { useDatabase, useDatabaseObject } from 'vuefire';
-    import { ref as dbRef, update } from 'firebase/database';
+    import { getDatabase, ref as dbRef, update } from 'firebase/database';
 
-    const db = useDatabase();
+    const db = getDatabase();
 
     const { campaign } = defineProps(['campaign']);
 

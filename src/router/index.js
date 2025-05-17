@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-// import { getAuth } from 'firebase/auth'; // No longer needed here
-// import { getCurrentUser } from 'vuefire'; // Remove getCurrentUser
 import { useAuthStore } from '@/stores/authStore'; // Import the auth store
 
 import HomeView from '../views/HomeView.vue';

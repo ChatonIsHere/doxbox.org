@@ -1,13 +1,37 @@
 <script setup>
+    import { ref, onUnmounted } from 'vue';
     import { storeToRefs } from 'pinia'; // Import storeToRefs
-    import { useDatabase, useDatabaseList } from 'vuefire';
-    import { ref as dbRef, query, orderByChild } from 'firebase/database';
+    import { getDatabase, ref as dbRef, query, orderByChild, onValue } from 'firebase/database';
     import { useAuthStore } from '@/stores/authStore';
 
-    const db = useDatabase();
+    const db = getDatabase();
 
-    const navInternal = useDatabaseList(query(dbRef(db, 'navigation/internal'), orderByChild('order')));
-    const navExternal = useDatabaseList(query(dbRef(db, 'navigation/external'), orderByChild('order')));
+    const navInternal = ref([]);
+    const navInternalRef = query(dbRef(db, 'navigation/internal'), orderByChild('order'));
+    const unsubscribeNavInternal = onValue(navInternalRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            navInternal.value = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+        } else {
+            navInternal.value = [];
+        }
+    });
+
+    const navExternal = ref([]);
+    const navExternalRef = query(dbRef(db, 'navigation/external'), orderByChild('order'));
+    const unsubscribeNavExternal = onValue(navExternalRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            navExternal.value = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+        } else {
+            navExternal.value = [];
+        }
+    });
+
+    onUnmounted(() => {
+        unsubscribeNavInternal();
+        unsubscribeNavExternal();
+    });
 
     const authStore = useAuthStore();
     const { user, claims } = storeToRefs(authStore); // Use storeToRefs for user and claims

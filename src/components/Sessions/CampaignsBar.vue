@@ -1,23 +1,34 @@
 <script setup>
-    import { computed } from 'vue';
-    import { useDatabase, useDatabaseObject } from 'vuefire'; // Removed useCurrentUser
-    import { ref as dbRef } from 'firebase/database';
+    import { computed, ref, onUnmounted } from 'vue';
+    import { getDatabase, ref as dbRef, onValue } from 'firebase/database';
     import { useAuthStore } from '@/stores/authStore'; // Import auth store
     import { storeToRefs } from 'pinia'; // Import storeToRefs
 
-    const db = useDatabase();
-    // const user = useCurrentUser(); // Removed
+    const db = getDatabase();
 
-    const campaigns = useDatabaseObject(dbRef(db, `quinn/campaigns/`));
-    const discordUsernames = useDatabaseObject(dbRef(db, `quinn/userData/username/`));
-    // const userExtended = useDatabaseObject(dbRef(db, `users/${user.value.uid}/`)); // Removed
+    const campaigns = ref(null);
+    const campaignsRef = dbRef(db, `quinn/campaigns/`);
+    const unsubscribeCampaigns = onValue(campaignsRef, (snapshot) => {
+        campaigns.value = snapshot.val();
+    });
+
+    const discordUsernames = ref(null);
+    const usernamesRef = dbRef(db, `quinn/userData/username/`);
+    const unsubscribeUsernames = onValue(usernamesRef, (snapshot) => {
+        discordUsernames.value = snapshot.val();
+    });
+
+    onUnmounted(() => {
+        unsubscribeCampaigns();
+        unsubscribeUsernames();
+    });
 
     const authStore = useAuthStore(); // Get store instance
     const { user, userExtended } = storeToRefs(authStore); // Use storeToRefs for user and userExtended
 
     const playerCampaigns = computed(() => {
         // Use userExtended from the store
-        if (typeof campaigns.value !== 'undefined' && userExtended.value && typeof userExtended.value.discordID !== 'undefined') {
+        if (typeof campaigns.value !== 'undefined' && campaigns.value !== null && userExtended.value && typeof userExtended.value.discordID !== 'undefined') {
             return Object.values(campaigns.value).filter((campaign) => {
                 if (campaign.dm == userExtended.value.discordID) return true;
 
@@ -29,7 +40,7 @@
     });
 
     const usernameFromDiscordID = (discordID) => {
-        return typeof discordUsernames.value !== 'undefined' ? discordUsernames.value[discordID] : discordID;
+        return typeof discordUsernames.value !== 'undefined' && discordUsernames.value !== null ? discordUsernames.value[discordID] : discordID;
     };
 </script>
 
@@ -53,7 +64,7 @@
                         <li class="list-group-item">
                             <h5>Players</h5>
                             <ul class="list-unstyled">
-                                <li v-for="player in Object.keys(campaign.players)" :key="player">{{ usernameFromDiscordID(player) }}</li>
+                                <li v-for="player in Object.keys(campaign.players || {})" :key="player">{{ usernameFromDiscordID(player) }}</li>
                             </ul>
                         </li>
                     </ul>
@@ -66,3 +77,18 @@
         </div>
     </div>
 </template>
+
+<style>
+    .vc-prev,
+    .vc-next,
+    .vc-title {
+        background-color: #00000000 !important;
+        color: white !important;
+    }
+
+    .vc-container {
+        background-color: #343a4022;
+        border-radius: 5px;
+        color: white !important;
+    }
+</style>

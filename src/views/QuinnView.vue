@@ -1,11 +1,30 @@
 <script setup>
-    import { useDatabase, useDatabaseList, useDatabaseObject } from 'vuefire'; // Keep for database interaction
-    import { ref as dbRef } from 'firebase/database'; // Keep for dbRef
+    import { ref, onUnmounted } from 'vue';
+    import { getDatabase, ref as dbRef, onValue } from 'firebase/database';
 
-    const db = useDatabase();
+    const db = getDatabase();
 
-    const usernames = useDatabaseObject(dbRef(db, 'quinn/userData/username'));
-    const players = useDatabaseList(dbRef(db, 'quinn/userData/d20'));
+    const usernames = ref(null);
+    const usernamesRef = dbRef(db, 'quinn/userData/username');
+    const unsubscribeUsernames = onValue(usernamesRef, (snapshot) => {
+        usernames.value = snapshot.val();
+    });
+
+    const players = ref([]);
+    const playersRef = dbRef(db, 'quinn/userData/d20');
+    const unsubscribePlayers = onValue(playersRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            players.value = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+        } else {
+            players.value = [];
+        }
+    });
+
+    onUnmounted(() => {
+        unsubscribeUsernames();
+        unsubscribePlayers();
+    });
 
     const discordUsername = (userID) => {
         // Ensure usernames.value exists before accessing properties

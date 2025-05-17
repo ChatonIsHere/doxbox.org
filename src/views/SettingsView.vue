@@ -1,17 +1,12 @@
 <script setup>
     import { computed, ref } from 'vue';
-    // import { useDatabase } from 'vuefire'; // No longer needed here
-    // import { ref as dbRef, update, getDatabase, get } from 'firebase/database'; // No longer needed here
-    // import { useCurrentExtendedUser } from '@/composables/useCurrentExtendedUser'; // Remove this import
     import { useAuthStore } from '@/stores/authStore'; // Import the auth store
     import NoLinkedDiscord from '../components/NoLinkedDiscord.vue';
-    // import { getAuth } from 'firebase/auth'; // No longer needed here
     import { useToastStore } from '@/stores/toastStore';
     import { storeToRefs } from 'pinia'; // Import storeToRefs
 
     const appVersion = __APP_VERSION__;
 
-    // const db = useDatabase(); // No longer needed here
     const authStore = useAuthStore(); // Get store instance
 
     // Use storeToRefs for reactive state properties
