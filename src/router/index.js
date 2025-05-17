@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { getAuth } from 'firebase/auth';
-import { getCurrentUser } from 'vuefire'; // Keep getCurrentUser for initial auth state check
+// import { getAuth } from 'firebase/auth'; // No longer needed here
+// import { getCurrentUser } from 'vuefire'; // Remove getCurrentUser
 import { useAuthStore } from '@/stores/authStore'; // Import the auth store
 
 import HomeView from '../views/HomeView.vue';
@@ -73,46 +73,54 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
     const authStore = useAuthStore(); // Get store instance
 
-    try {
-        // Use getCurrentUser to ensure initial auth state is loaded before proceeding
-        const user = await getCurrentUser();
+    // Wait for the auth store to be initialized
+    // This ensures the onAuthStateChanged listener has run at least once
+    // and populated the user/claims state.
+    if (!authStore.authInitialized) {
+        await new Promise((resolve) => {
+            const unsubscribe = authStore.$subscribe((mutation, state) => {
+                if (state.authInitialized) {
+                    unsubscribe();
+                    resolve();
+                }
+            });
+            // If the store is already initialized by the time we subscribe, resolve immediately
+            if (authStore.authInitialized) {
+                unsubscribe();
+                resolve();
+            }
+        });
+    }
 
-        if (to.meta.requiresAuth && !user) {
+    const user = authStore.user; // Get user from the store
+
+    if (to.meta.requiresAuth && !user) {
+        // If route requires auth and no user is logged in (according to store), redirect to home
+        return next({ path: '/' });
+    }
+
+    // If user is logged in and route requires linked Discord
+    if (to.meta.requiresLinkedDiscord && user) {
+        // Check claims from the store
+        if (!authStore.claims || !authStore.claims.discordID) {
+            console.warn('User requires linked Discord but claims or discordID is missing in store.');
+            // Redirect to home if Discord is not linked
             return next({ path: '/' });
         }
-
-        // Rely on the store's claims once the user is loaded
-        if (to.meta.requiresLinkedDiscord && user) {
-            // Wait for auth store to be initialized and claims to be potentially loaded
-            // This might require a more robust waiting mechanism if claims aren't immediately available
-            // For simplicity here, we assume claims are loaded shortly after user
-            // A more complex app might watch authStore.authInitialized or claims
-            if (!authStore.claims || !authStore.claims.discordID) {
-                // If claims aren't loaded yet, try fetching them again or wait
-                // For now, redirect if claims or discordID is missing
-                console.warn('User requires linked Discord but claims or discordID is missing in store.');
-                // Optionally re-fetch claims if needed, but the listener should handle this
-                // const tokenResult = await user.getIdTokenResult();
-                // if (!tokenResult.claims.discordID) {
-                return next({ path: '/' });
-                // }
-            }
-        }
-
-        const nearestWithTitle = to.matched
-            .slice()
-            .reverse()
-            .find((r) => r.meta && r.meta.title);
-
-        if (nearestWithTitle) {
-            document.title = nearestWithTitle.meta.title + ' - Dox Box';
-        }
-
-        next();
-    } catch (error) {
-        console.error('Error during navigation guard:', error);
-        next(false); // Cancel navigation on error
     }
+
+    // Update document title
+    const nearestWithTitle = to.matched
+        .slice()
+        .reverse()
+        .find((r) => r.meta && r.meta.title);
+
+    if (nearestWithTitle) {
+        document.title = nearestWithTitle.meta.title + ' - Dox Box';
+    }
+
+    // Continue navigation
+    next();
 });
 
 export default router;

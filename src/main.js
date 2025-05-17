@@ -4,7 +4,7 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import App from './App.vue';
 import router from './router';
 
-import { VueFire, VueFireAuth } from 'vuefire';
+import { VueFire } from 'vuefire'; // Remove VueFireAuth
 import { app as firebaseApp } from './firebase';
 
 import * as bootstrap from 'bootstrap';
@@ -28,7 +28,9 @@ app.use(router);
 
 app.use(VueFire, {
     firebaseApp,
-    modules: [VueFireAuth()],
+    modules: [
+        // Remove VueFireAuth()
+    ],
 });
 
 app.use(VCalendar, {});
@@ -42,6 +44,6 @@ app.use(Particles, {
 app.use(pinia);
 
 const authStore = useAuthStore();
-authStore.initAuthListener();
+authStore.initAuthListener(); // Initialize the auth listener when the app starts
 
 app.mount('#app');
