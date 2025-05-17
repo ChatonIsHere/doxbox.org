@@ -5,7 +5,6 @@
 
     const copy = (content) => {
         navigator.clipboard.writeText(content);
-        // alert(`"${content}" has been copied to the clipboard`);
     };
 </script>
 
