@@ -1,8 +1,8 @@
 <script setup>
     import { computed, ref, onUnmounted } from 'vue';
     import { getDatabase, ref as dbRef, onValue } from 'firebase/database';
-    import { useAuthStore } from '@/stores/authStore'; // Import auth store
-    import { storeToRefs } from 'pinia'; // Import storeToRefs
+    import { useAuthStore } from '@/stores/authStore';
+    import { storeToRefs } from 'pinia';
 
     const db = getDatabase();
 
@@ -23,11 +23,10 @@
         unsubscribeUsernames();
     });
 
-    const authStore = useAuthStore(); // Get store instance
-    const { user, userExtended } = storeToRefs(authStore); // Use storeToRefs for user and userExtended
+    const authStore = useAuthStore();
+    const { user, userExtended } = storeToRefs(authStore);
 
     const playerCampaigns = computed(() => {
-        // Use userExtended from the store
         if (typeof campaigns.value !== 'undefined' && campaigns.value !== null && userExtended.value && typeof userExtended.value.discordID !== 'undefined') {
             return Object.values(campaigns.value).filter((campaign) => {
                 if (campaign.dm == userExtended.value.discordID) return true;
@@ -36,7 +35,7 @@
                     return Object.keys(campaign.players).includes(userExtended.value.discordID);
                 }
             });
-        } else return []; // Return empty array if data is not ready
+        } else return [];
     });
 
     const usernameFromDiscordID = (discordID) => {
@@ -47,7 +46,6 @@
 <template>
     <div class="container">
         <div class="row justify-content-center">
-            <!-- Ensure playerCampaigns is an array before iterating -->
             <div class="col-12 col-md-6 col-lg-4 col-xl-2 pb-2" v-for="campaign in playerCampaigns" :key="campaign.id">
                 <div class="card h-100 d-flex flex-column">
                     <div class="card-header p-3">

@@ -1,8 +1,8 @@
 <script setup>
     import { computed, ref, onUnmounted } from 'vue';
     import { getDatabase, ref as dbRef, onValue } from 'firebase/database';
-    import { useAuthStore } from '@/stores/authStore'; // Import auth store
-    import { storeToRefs } from 'pinia'; // Import storeToRefs
+    import { useAuthStore } from '@/stores/authStore';
+    import { storeToRefs } from 'pinia';
 
     import SessionDayDropdown from '../components/Sessions/SessionDayDropdown.vue';
     import UpcomingSessions from '../components/Sessions/UpcomingSessions.vue';
@@ -21,12 +21,10 @@
         unsubscribeCampaigns();
     });
 
-    const authStore = useAuthStore(); // Get store instance
-    const { user, userExtended } = storeToRefs(authStore); // Use storeToRefs for user and userExtended
+    const authStore = useAuthStore();
+    const { user, userExtended } = storeToRefs(authStore);
 
     const dmsCampaign = computed(() => {
-        // Use userExtended from the store
-        // Ensure userExtended.value exists before accessing dmCampaign
         if (typeof campaigns.value !== 'undefined' && campaigns.value !== null && userExtended.value && typeof userExtended.value.dmCampaign !== 'undefined') {
             return campaigns.value[userExtended.value.dmCampaign];
         } else return false;

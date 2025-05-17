@@ -1,8 +1,8 @@
 <script setup>
     import { computed, ref, watch, onUnmounted } from 'vue';
     import { getDatabase, ref as dbRef, onValue, push } from 'firebase/database';
-    import { useAuthStore } from '@/stores/authStore'; // Import auth store
-    import { storeToRefs } from 'pinia'; // Import storeToRefs
+    import { useAuthStore } from '@/stores/authStore';
+    import { storeToRefs } from 'pinia';
 
     const db = getDatabase();
 
@@ -30,8 +30,8 @@
         unsubscribeUpcoming();
     });
 
-    const authStore = useAuthStore(); // Get store instance
-    const { user, userExtended } = storeToRefs(authStore); // Use storeToRefs for user and userExtended
+    const authStore = useAuthStore();
+    const { user, userExtended } = storeToRefs(authStore);
 
     const calendar = ref(null);
 
@@ -58,7 +58,7 @@
         ];
 
         try {
-            let sessions = Object.values(history.value || {}); // Handle null/undefined
+            let sessions = Object.values(history.value || {});
             if (upcoming.value !== null) sessions = sessions.concat(Object.values(upcoming.value));
 
             for (let session of sessions) {
@@ -67,7 +67,6 @@
                 let label = 'Unknown campaign';
 
                 try {
-                    // Ensure campaigns.value and campaigns.value[session.campaign] exist
                     if (campaigns.value && campaigns.value[session.campaign] && typeof campaigns.value[session.campaign].calendar !== 'undefined') {
                         backgroundColor = campaigns.value[session.campaign].calendar.color;
                         fillMode = campaigns.value[session.campaign].calendar.style;
@@ -95,7 +94,6 @@
     const disabledDates = computed(() => {
         let weekdays = [];
 
-        // Use userExtended from the store
         try {
             if (userExtended.value && userExtended.value.availability) {
                 let availability = Object.values(userExtended.value.availability);
@@ -108,7 +106,7 @@
                 }
             }
         } catch (err) {
-            console.error(err); // Log other errors
+            console.error(err);
         }
 
         return [
@@ -121,7 +119,6 @@
     });
 
     const dmsCampaign = computed(() => {
-        // Use userExtended from the store
         if (campaigns.value !== null && typeof campaigns.value !== 'undefined' && userExtended.value && typeof userExtended.value.dmCampaign !== 'undefined') return campaigns.value[userExtended.value.dmCampaign];
         else return false;
     });
@@ -143,22 +140,20 @@
     });
 
     const scheduleNewSession = () => {
-        let sessions = Object.values(history.value || {}); // Handle null/undefined
+        let sessions = Object.values(history.value || {});
         if (upcoming.value !== null) sessions = sessions.concat(Object.values(upcoming.value));
 
-        // Use userExtended from the store
         if (sessions.find((session) => session.date == formatDate(selectedDate.value))) {
             latestErrorMessage.value = `There is already a session scheduled for ${formatDate(selectedDate.value)}`;
             setTimeout(() => {
                 latestErrorMessage.value = '';
             }, 15000);
         } else if (userExtended.value && userExtended.value.discordID) {
-            // Ensure userExtended and discordID exist
             push(upcomingRef, {
                 campaign: dmsCampaign.value.id,
                 date: formatDate(selectedDate.value),
                 availability: {
-                    [userExtended.value.discordID]: 'available', // Use userExtended from the store
+                    [userExtended.value.discordID]: 'available',
                 },
             });
         } else {
@@ -203,7 +198,6 @@
                 <p v-if="selectedDate == 'Please select a date'">Please select a date</p>
                 <div v-else>
                     <p class="pb-0 mb-0">New {{ dmsCampaign ? dmsCampaign.name : 'Unknown Campaign' }} session on</p>
-                    <!-- Added check for dmsCampaign -->
                     <p class="pt-0 mt-0">{{ newSessionDateString }}</p>
                 </div>
             </div>

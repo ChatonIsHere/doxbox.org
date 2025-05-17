@@ -21,7 +21,6 @@
                     <span v-if="gameserver.version.secondary" class="badge badge-pill bg-info text-dark mx-1">{{ gameserver.version.secondary }}</span>
                 </div>
                 <p class="card-text">{{ gameserver.description }}</p>
-                <!-- <a :href="gameserver.link" class="btn btn-primary mb-2">Random URL</a> -->
                 <ul class="list-group mb-2">
                     <a v-if="gameserver.resources.primary.name" class="list-group-item bg-dark text-light" :href="gameserver.resources.primary.url">{{ gameserver.resources.primary.name }}</a>
                     <a v-if="gameserver.resources.secondary.name" class="list-group-item bg-dark text-light" :href="gameserver.resources.secondary.url">{{ gameserver.resources.secondary.name }}</a>

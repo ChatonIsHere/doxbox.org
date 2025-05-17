@@ -27,7 +27,6 @@
     });
 
     const discordUsername = (userID) => {
-        // Ensure usernames.value exists before accessing properties
         let username = usernames.value ? usernames.value[userID] : undefined;
         if (!username) username = userID;
         return username;
@@ -46,10 +45,8 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Ensure players is loaded before iterating -->
                 <tr v-for="player in players || []">
                     <td class="align-middle">{{ discordUsername(player.id) }}</td>
-                    <!-- Ensure player.sum and player.count exist and count is not zero -->
                     <td class="align-middle">{{ player.sum !== undefined && player.count > 0 ? (player.sum / player.count).toFixed(2) : 'N/A' }}</td>
                     <td class="align-middle">{{ player.count !== undefined ? player.count : 'N/A' }}</td>
                 </tr>

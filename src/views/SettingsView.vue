@@ -1,75 +1,44 @@
 <script setup>
     import { computed, ref } from 'vue';
-    import { useAuthStore } from '@/stores/authStore'; // Import the auth store
+    import { useAuthStore } from '@/stores/authStore';
     import NoLinkedDiscord from '../components/NoLinkedDiscord.vue';
     import { useToastStore } from '@/stores/toastStore';
-    import { storeToRefs } from 'pinia'; // Import storeToRefs
+    import { storeToRefs } from 'pinia';
 
     const appVersion = __APP_VERSION__;
 
-    const authStore = useAuthStore(); // Get store instance
+    const authStore = useAuthStore();
 
-    // Use storeToRefs for reactive state properties
     const { user, userExtended } = storeToRefs(authStore);
-    // Destructure actions directly (they are not refs)
     const { generateApiKey: storeGenerateApiKey, revokeApiKey: storeRevokeApiKey } = authStore;
 
     const toastStore = useToastStore();
 
-    // generateSecureRandomString is now in the store, but can be kept here if only used here
-    // function generateSecureRandomString(length) {
-    //     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01256789';
-    //     const charactersLength = characters.length;
-    //     let result = '';
-
-    //     const randomValues = new Uint8Array(length);
-    //     crypto.getRandomValues(randomValues);
-
-    //     for (let i = 0; i < length; i++) {
-    //         result += characters.charAt(randomValues[i] % charactersLength);
-    //     }
-
-    //     return result;
-    // }
-
-    const generatedApiKey = ref(''); // Still useful to display the newly generated key temporarily
+    const generatedApiKey = ref('');
     const isGenerating = ref(false);
     const isRevoking = ref(false);
 
-    // setMessageWithTimeout is now handled by the toastStore directly in the authStore actions
-    // const setMessageWithTimeout = (type, message, duration = 5000) => {
-    //     if (type === 'error') {
-    //         toastStore.addToast({ message, backgroundClass: 'bg-danger', duration });
-    //     } else if (type === 'success') {
-    //         toastStore.addToast({ message, backgroundClass: 'bg-success', duration });
-    //     }
-    // };
-
-    // Use the action from the store
     const generateApiKey = async () => {
         isGenerating.value = true;
-        generatedApiKey.value = ''; // Clear previous generated key display
+        generatedApiKey.value = '';
 
         try {
-            const newKey = await storeGenerateApiKey(); // Call the store action
+            const newKey = await storeGenerateApiKey();
             if (newKey) {
-                generatedApiKey.value = newKey; // Display the new key if generated
+                generatedApiKey.value = newKey;
             }
         } catch (error) {
-            // Error handling is done in the store, but we can log here if needed
             console.error('Component caught error during API key generation:', error);
         } finally {
             isGenerating.value = false;
         }
     };
 
-    // Use the action from the store
     const revokeApiKey = async () => {
         isRevoking.value = true;
         try {
-            await storeRevokeApiKey(); // Call the store action
+            await storeRevokeApiKey();
         } catch (error) {
-            // Error handling is done in the store
             console.error('Component caught error during API key revocation:', error);
         } finally {
             isRevoking.value = false;
@@ -97,9 +66,7 @@
                 <p>This API key is currently only used for the Quinn Shmeppy Extension.</p>
                 <p>Please do not share this with anyone, as it grants access to limited Quinn features remotely.</p>
                 <div class="input-group my-3">
-                    <!-- Display the key from userExtended in the store -->
                     <input type="text" class="form-control" placeholder="Please generate an API key" readonly aria-label="API Key" aria-describedby="generate-apikey-button" :value="userExtended?.apiKey || ''" />
-                    <!-- Modified buttons and added revoke button -->
                     <template v-if="userExtended?.apiKey">
                         <button class="btn btn-warning" type="button" id="generate-apikey-button" @click="generateApiKey" :disabled="isGenerating || isRevoking">Regenerate API Key</button>
                         <button class="btn btn-danger" type="button" id="revoke-apikey-button" @click="revokeApiKey" :disabled="isRevoking || isGenerating">Revoke API Key</button>
@@ -123,18 +90,18 @@
     }
 
     .form-control.bg-secondary {
-        background-color: #6c757d !important; /* Ensure secondary background color */
+        background-color: #6c757d !important;
     }
 
     .form-control.bg-secondary::placeholder {
-        color: rgba(255, 255, 255, 0.7); /* Lighter placeholder text */
+        color: rgba(255, 255, 255, 0.7);
     }
 
     .form-control.bg-secondary:focus {
-        background-color: #6c757d !important; /* Keep background on focus */
+        background-color: #6c757d !important;
         color: white !important;
-        border-color: #86b7fe; /* Bootstrap focus color */
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); /* Bootstrap focus shadow */
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     }
 
     --bs-table-bg {

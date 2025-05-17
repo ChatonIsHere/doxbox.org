@@ -1,30 +1,27 @@
 <script setup>
-    import { storeToRefs } from 'pinia'; // Import storeToRefs
-    import { signInWithPopup, signOut } from 'firebase/auth';
+    import { storeToRefs } from 'pinia';
     import { useAuthStore } from '@/stores/authStore';
     import { useRouter } from 'vue-router';
 
     const router = useRouter();
     const authStore = useAuthStore();
-    const { user } = storeToRefs(authStore); // Use storeToRefs for user
-    const { signInWithGoogle, signOutUser } = authStore; // Actions don't need storeToRefs
+    const { user } = storeToRefs(authStore);
+    const { signInWithGoogle, signOutUser } = authStore;
 
     const signinPopup = async () => {
         try {
-            await signInWithGoogle(); // Call the store action
+            await signInWithGoogle();
             router.push('/');
         } catch (error) {
-            // Error handling is done in the store, but router push might need adjustment
             console.error('Component caught error during signin:', error);
         }
     };
 
     const signOutButton = async () => {
         try {
-            await signOutUser(); // Call the store action
+            await signOutUser();
             router.push('/');
         } catch (error) {
-            // Error handling is done in the store
             console.error('Component caught error during signout:', error);
         }
     };

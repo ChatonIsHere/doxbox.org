@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useAuthStore } from '@/stores/authStore'; // Import the auth store
+import { useAuthStore } from '@/stores/authStore';
 
-import HomeView from '../views/HomeView.vue';
-const GameserversView = () => import('../views/GameserversView.vue');
-const QuinnView = () => import('../views/QuinnView.vue');
-const SessionsView = () => import('../views/SessionsView.vue');
-const SettingsView = () => import('../views/SettingsView.vue');
+import HomeView from '@/views/HomeView.vue';
+const GameserversView = () => import('@/views/GameserversView.vue');
+const QuinnView = () => import('@/views/QuinnView.vue');
+const SessionsView = () => import('@/views/SessionsView.vue');
+const SettingsView = () => import('@/views/SettingsView.vue');
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -69,11 +69,7 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-    const authStore = useAuthStore(); // Get store instance
-
-    // Wait for the auth store to be initialized
-    // This ensures the onAuthStateChanged listener has run at least once
-    // and populated the user/claims state.
+    const authStore = useAuthStore();
     if (!authStore.authInitialized) {
         await new Promise((resolve) => {
             const unsubscribe = authStore.$subscribe((mutation, state) => {
@@ -82,7 +78,6 @@ router.beforeEach(async (to, from, next) => {
                     resolve();
                 }
             });
-            // If the store is already initialized by the time we subscribe, resolve immediately
             if (authStore.authInitialized) {
                 unsubscribe();
                 resolve();
@@ -90,24 +85,19 @@ router.beforeEach(async (to, from, next) => {
         });
     }
 
-    const user = authStore.user; // Get user from the store
+    const user = authStore.user;
 
     if (to.meta.requiresAuth && !user) {
-        // If route requires auth and no user is logged in (according to store), redirect to home
         return next({ path: '/' });
     }
 
-    // If user is logged in and route requires linked Discord
     if (to.meta.requiresLinkedDiscord && user) {
-        // Check claims from the store
         if (!authStore.claims || !authStore.claims.discordID) {
             console.warn('User requires linked Discord but claims or discordID is missing in store.');
-            // Redirect to home if Discord is not linked
             return next({ path: '/' });
         }
     }
 
-    // Update document title
     const nearestWithTitle = to.matched
         .slice()
         .reverse()
@@ -117,7 +107,6 @@ router.beforeEach(async (to, from, next) => {
         document.title = nearestWithTitle.meta.title + ' - Dox Box';
     }
 
-    // Continue navigation
     next();
 });
 

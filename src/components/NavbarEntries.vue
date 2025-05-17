@@ -1,6 +1,6 @@
 <script setup>
     import { ref, onUnmounted } from 'vue';
-    import { storeToRefs } from 'pinia'; // Import storeToRefs
+    import { storeToRefs } from 'pinia';
     import { getDatabase, ref as dbRef, query, orderByChild, onValue } from 'firebase/database';
     import { useAuthStore } from '@/stores/authStore';
 
@@ -34,16 +34,7 @@
     });
 
     const authStore = useAuthStore();
-    const { user, claims } = storeToRefs(authStore); // Use storeToRefs for user and claims
-
-    // customClaims ref and onMounted logic are no longer needed, use store.claims directly
-    // const customClaims = ref({});
-    // onMounted(async () => {
-    //     if (user.value) {
-    //         const tokenResult = await user.value.getIdTokenResult();
-    //         customClaims.value = tokenResult.claims;
-    //     }
-    // });
+    const { user, claims } = storeToRefs(authStore);
 </script>
 
 <template>
@@ -51,7 +42,6 @@
         <li class="nav-item">
             <router-link to="/" class="nav-link">Home</router-link>
         </li>
-        <!-- Use claims from the store -->
         <template v-if="claims && claims.discordID">
             <li v-for="navnode in navInternal" :key="navnode.id" class="nav-item">
                 <router-link :to="navnode.route" class="nav-link">{{ navnode.name }}</router-link>

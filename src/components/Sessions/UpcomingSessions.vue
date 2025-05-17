@@ -1,8 +1,8 @@
 <script setup>
     import { computed, ref, onUnmounted } from 'vue';
     import { getDatabase, ref as dbRef, onValue, update } from 'firebase/database';
-    import { useAuthStore } from '@/stores/authStore'; // Import auth store
-    import { storeToRefs } from 'pinia'; // Import storeToRefs
+    import { useAuthStore } from '@/stores/authStore';
+    import { storeToRefs } from 'pinia';
 
     const db = getDatabase();
 
@@ -30,11 +30,10 @@
         unsubscribeUsernames();
     });
 
-    const authStore = useAuthStore(); // Get store instance
-    const { user, userExtended } = storeToRefs(authStore); // Use storeToRefs for user and userExtended
+    const authStore = useAuthStore();
+    const { user, userExtended } = storeToRefs(authStore);
 
     const campaignFromID = (id) => {
-        // Ensure campaigns.value exists
         return campaigns.value ? Object.values(campaigns.value).find((campaign) => campaign.id === id) : undefined;
     };
 
@@ -42,17 +41,14 @@
         try {
             let modifiedSessionsArray = [];
 
-            // Ensure sessions and campaigns.value exist, and userExtended has discordID
             if (sessions && campaigns.value && userExtended.value && userExtended.value.discordID) {
                 Object.entries(sessions).forEach((session) => {
                     const campaign = campaigns.value[session[1].campaign];
                     if (campaign) {
-                        // Ensure campaign exists
-                        let players = Object.keys(campaign.players || {}); // Handle null/undefined players
+                        let players = Object.keys(campaign.players || {});
                         players.push(campaign.dm);
 
                         if (players.includes(userExtended.value.discordID)) {
-                            // Use userExtended from the store
                             modifiedSessionsArray.push({
                                 id: session[0],
                                 campaign: session[1].campaign,
@@ -68,7 +64,7 @@
 
             return modifiedSessionsArray;
         } catch (err) {
-            console.error(err); // Log errors
+            console.error(err);
             return [];
         }
     };
@@ -82,19 +78,16 @@
             timeZone: 'Europe/London',
         }).format(sessionDate);
 
-        // Ensure campaign exists before accessing name
         return `${campaign ? campaign.name : 'Unknown Campaign'} on ${dateString}`;
     };
 
     const colorFromSession = (session) => {
         let campaign = campaignFromID(session.campaign);
 
-        // Ensure campaign and calendar exist
-        return campaign && campaign.calendar ? campaign.calendar.color : '#000000'; // Default color
+        return campaign && campaign.calendar ? campaign.calendar.color : '#000000';
     };
 
     const dmsCampaign = computed(() => {
-        // Use userExtended from the store
         if (campaigns.value !== null && typeof campaigns.value !== 'undefined' && userExtended.value && typeof userExtended.value.dmCampaign !== 'undefined') return campaigns.value[userExtended.value.dmCampaign];
         else return false;
     });
@@ -108,7 +101,6 @@
     };
 
     const getPlayerAvailability = (session) => {
-        // Ensure campaigns.value exists and session has availability
         if (typeof campaigns.value === 'undefined' || campaigns.value === null || typeof session.availability === 'undefined') return false;
 
         let available = {
@@ -129,9 +121,9 @@
             };
 
         const campaign = campaigns.value[session.campaign];
-        if (!campaign) return false; // Ensure campaign exists
+        if (!campaign) return false;
 
-        let players = Object.keys(campaign.players || {}); // Handle null/undefined players
+        let players = Object.keys(campaign.players || {});
         players.push(campaign.dm);
 
         for (let player of players) {
@@ -162,22 +154,18 @@
     };
 
     const updateAvailability = (sessionID, sessionavailabilityType) => {
-        // Use userExtended from the store
         if (userExtended.value && userExtended.value.discordID) {
-            // Ensure userExtended and discordID exist
             update(dbRef(db, `sessions/upcoming/${sessionID}/availability/`), {
-                [userExtended.value.discordID]: sessionavailabilityType, // Use userExtended from the store
+                [userExtended.value.discordID]: sessionavailabilityType,
             });
         } else {
             console.warn('User data not loaded. Cannot update availability.');
-            // Optionally add a toast message here
         }
     };
 </script>
 
 <template>
     <div class="accordion accordion-flush" id="sessionsAccordion">
-        <!-- Ensure upcomingSessions is not null before passing to sortSessions -->
         <div class="accordion-item" v-for="session in sortSessions(upcomingSessions)">
             <h2 class="accordion-header">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="`#accordion-${session.date}-${session.campaign}`" aria-expanded="false" :aria-controls="`accordion-${session.date}-${session.campaign}`">{{ sessionDateString(session) }}</button>
@@ -187,7 +175,6 @@
                 <div class="accordion-body">
                     <div class="container">
                         <div class="row">
-                            <!-- Ensure getPlayerAvailability returns an array -->
                             <div class="col-12 col-md" v-for="availabilityType in getPlayerAvailability(session) || []">
                                 <h5>{{ availabilityType.title }}</h5>
                                 <hr class="thin" />

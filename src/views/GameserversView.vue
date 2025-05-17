@@ -2,8 +2,8 @@
     import { ref, onUnmounted } from 'vue';
     import GameserverCard from '../components/GameserverCard.vue';
     import { getDatabase, ref as dbRef, onValue } from 'firebase/database';
-    import { useAuthStore } from '@/stores/authStore'; // Import auth store
-    import { storeToRefs } from 'pinia'; // Import storeToRefs
+    import { useAuthStore } from '@/stores/authStore';
+    import { storeToRefs } from 'pinia';
 
     const db = getDatabase();
 
@@ -22,13 +22,12 @@
         unsubscribeGameservers();
     });
 
-    const authStore = useAuthStore(); // Get store instance
-    const { user } = storeToRefs(authStore); // Use storeToRefs for user
+    const authStore = useAuthStore();
+    const { user } = storeToRefs(authStore);
 </script>
 
 <template>
     <div class="px-4 py-5 text-center">
-        <!-- Use user from the store -->
         <h1 class="display-6 fw-bold text-white" v-if="user">Gameservers</h1>
     </div>
     <div class="container-fluid mb-4">
