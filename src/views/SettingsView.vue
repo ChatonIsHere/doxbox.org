@@ -1,18 +1,18 @@
 <script setup>
-    import { computed, ref } from 'vue';
+    import { ref } from 'vue';
     import { useAuthStore } from '@/stores/authStore';
     import NoLinkedDiscord from '@/components/NoLinkedDiscord.vue';
-    import { useToastStore } from '@/stores/toastStore';
     import { storeToRefs } from 'pinia';
+    import { useBreakpointStore } from '@/stores/breakpointStore'; // Import the breakpoint store
 
     const appVersion = __APP_VERSION__;
 
     const authStore = useAuthStore();
+    const breakpointStore = useBreakpointStore(); // Instantiate the breakpoint store
 
-    const { user, userExtended } = storeToRefs(authStore);
+    const { userExtended } = storeToRefs(authStore);
     const { generateApiKey: storeGenerateApiKey, revokeApiKey: storeRevokeApiKey } = authStore;
-
-    const toastStore = useToastStore();
+    const { breakpointSm } = storeToRefs(breakpointStore); // Extract breakpointSm ref
 
     const generatedApiKey = ref('');
     const isGenerating = ref(false);
@@ -44,10 +44,6 @@
             isRevoking.value = false;
         }
     };
-
-    const getUserID = computed(() => {
-        return user.value ? user.value.uid : null;
-    });
 </script>
 
 <template>
@@ -65,13 +61,21 @@
                 <h3 class="fw-bold text-white pb-4">Dox Box API Key</h3>
                 <p>This API key is currently only used for the Quinn Shmeppy Extension.</p>
                 <p>Please do not share this with anyone, as it grants access to limited Quinn features remotely.</p>
-                <div class="input-group my-3">
-                    <input type="text" class="form-control" placeholder="Please generate an API key" readonly aria-label="API Key" aria-describedby="generate-apikey-button" :value="userExtended?.apiKey || ''" />
+                <div v-if="breakpointSm" class="input-group my-3 flex-column flex-md-row">
+                    <input type="text" class="form-control mb-2 mb-md-0 text-center" placeholder="Please generate an API key" readonly aria-label="API Key" aria-describedby="generate-apikey-button" :value="userExtended?.apiKey || ''" />
                     <template v-if="userExtended?.apiKey">
-                        <button class="btn btn-warning" type="button" id="generate-apikey-button" @click="generateApiKey" :disabled="isGenerating || isRevoking">Regenerate API Key</button>
-                        <button class="btn btn-danger" type="button" id="revoke-apikey-button" @click="revokeApiKey" :disabled="isRevoking || isGenerating">Revoke API Key</button>
+                        <button class="btn btn-warning mb-2 mb-md-0" type="button" id="generate-apikey-button" @click="generateApiKey" :disabled="isGenerating || isRevoking">Regenerate API Key</button>
+                        <button class="btn btn-danger mb-2 mb-md-0" type="button" id="revoke-apikey-button" @click="revokeApiKey" :disabled="isRevoking || isGenerating">Revoke API Key</button>
                     </template>
-                    <button v-else class="btn btn-success" type="button" id="generate-apikey-button" @click="generateApiKey" :disabled="isGenerating || isRevoking">Generate API Key</button>
+                    <button v-else class="btn btn-success mb-2 mb-md-0" type="button" id="generate-apikey-button" @click="generateApiKey" :disabled="isGenerating || isRevoking">Generate API Key</button>
+                </div>
+                <div v-else class="my-3 flex-column flex-md-row">
+                    <input type="text" class="form-control mb-2 mb-md-0 text-center" placeholder="Please generate an API key" readonly aria-label="API Key" aria-describedby="generate-apikey-button" :value="userExtended?.apiKey || ''" />
+                    <div v-if="userExtended?.apiKey" class="btn-group w-100">
+                        <button class="btn btn-block btn-warning mb-2 mb-md-0" type="button" id="generate-apikey-button" @click="generateApiKey" :disabled="isGenerating || isRevoking">Regenerate API Key</button>
+                        <button class="btn btn-block btn-danger mb-2 mb-md-0" type="button" id="revoke-apikey-button" @click="revokeApiKey" :disabled="isRevoking || isGenerating">Revoke API Key</button>
+                    </div>
+                    <button v-else class="btn w-100 btn-success mb-2 mb-md-0" type="button" id="generate-apikey-button" @click="generateApiKey" :disabled="isGenerating || isRevoking">Generate API Key</button>
                 </div>
             </div>
         </div>
