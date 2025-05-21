@@ -1,8 +1,20 @@
 {
-    "name": "-",
-    "version": "25.5.16",
-    "private": true,
+    "name": "doxbox.org",
+    "version": "25.5.17",
+    "description": "A progressive web application for the Dox Box clan, featuring game server management, TTRPG session tracking, a journal, and Discord bot stats.",
+    "private": false,
     "type": "module",
+    "license": "AGPL-3.0-only",
+    "keywords": [
+        "vue",
+        "firebase",
+        "pwa",
+        "journal",
+        "game-servers",
+        "ttrpg",
+        "discord-bot"
+    ],
+    "homepage": "https://doxbox.org/",
     "scripts": {
         "dev": "vite",
         "build": "vite build",
