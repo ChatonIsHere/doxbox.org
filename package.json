@@ -13,7 +13,7 @@
         "@popperjs/core": "^2.11.8",
         "@tsparticles/slim": "^3.8.1",
         "@tsparticles/vue3": "^3.0.1",
-        "bootstrap": "^5.3.3",
+        "bootstrap": "^5.3.6",
         "firebase": "^10.12.0",
         "pinia": "^3.0.2",
         "pinia-plugin-persistedstate": "^4.3.0",
