@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "@popperjs/core": "^2.11.8",
-        "@tsparticles/slim": "^3.4.0",
+        "@tsparticles/slim": "^3.8.1",
         "@tsparticles/vue3": "^3.0.1",
         "bootstrap": "^5.3.3",
         "firebase": "^10.12.0",
