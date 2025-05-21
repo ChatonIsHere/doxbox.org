@@ -1,4 +1,4 @@
-# DoxBox.org Web Application
+# doxbox.org
 
 [![Current Version](https://img.shields.io/badge/version-25.5.16-blue.svg)](package.json)
 [![Built with Vue.js](https://img.shields.io/badge/built%20with-Vue.js-4FC08D.svg)](https://vuejs.org/)
