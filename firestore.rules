@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+    match /databases/{database}/documents {
+
+    // Helper function to check if the authenticated user is a member (player or DM) 
+        // of a specific campaign.
+        // Assumes 'campaigns/{campaignId}' documents exist and have:
+        // - 'dm' (string: user's discordID) 
+        // - 'players' (map: keys are user discordIDs)
+        // Assumes 'discordID' is available in request.auth.token as a custom claim.
+        function isCampaignMember(campaignId) {
+            // Ensure the path to the campaign document is correct.
+            // If your campaigns are stored under a different collection name, adjust here.
+            // For example, if they are under 'quinn/campaigns/{campaignId}', the path would be:
+            // /databases/$(database)/documents/quinn/$(campaignId)
+            // Based on your RTDB rules, it seems 'quinn/campaigns' was the path.
+            // Let's assume a top-level 'campaigns' collection for Firestore for simplicity,
+            // or adjust if 'quinn' is a top-level collection containing a 'campaigns' subcollection.
+            // For this example, I'll use 'campaigns/{campaignId}'.
+            let campaignDoc = get(/databases/$(database)/documents/campaigns/$(campaignId));
+
+            // Check if campaignDoc.data exists and has the necessary fields before accessing them
+            return request.auth != null &&
+            request.auth.token.discordID != null &&
+            campaignDoc.data != null &&
+            (
+            (campaignDoc.data.dm == request.auth.token.discordID) ||
+            (request.auth.token.discordID in campaignDoc.data.players)
+            );
+        }
+
+        // Journal data:
+        // Structure: journal/{campaignId}/arcs/{arcId}/stages/{stageId}/steps/{stepId}
+        match /journal/{campaignId}/{document=**} {
+            allow read, write: if isCampaignMember(campaignId);
+        }
+
+        // Rules for 'campaigns' collection (referenced by isCampaignMember)
+        // These are basic examples; tailor them to your actual needs for managing campaign data.
+        match /campaigns/{campaignId} {
+        // Allow reading campaign details if authenticated (e.g., for the function above or listing campaigns)
+            allow read: if request.auth != null;
+
+            // Allow write (e.g., creating/updating campaigns) typically by DMs or specific logic.
+            // This is a placeholder. For example, only the DM can update campaign details.
+            allow update, delete: if request.auth != null && request.auth.token.discordID != null && get(/databases/$(database)/documents/campaigns/$(campaignId)).data.dm == request.auth.token.discordID;
+            allow create: if request.auth != null; // Or more specific rules for campaign creation
+        }
+
+        // If you have other collections, define their rules here.
+        // A general fallback (if needed, but be cautious):
+    // match /{path=**}/documents/{document} {
+        //   allow read, write: if request.auth != null; // Or false to deny by default
+        // }
+    }
+}

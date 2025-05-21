@@ -6,6 +6,7 @@ const GameserversView = () => import('@/views/GameserversView.vue');
 const QuinnView = () => import('@/views/QuinnView.vue');
 const SessionsView = () => import('@/views/SessionsView.vue');
 const SettingsView = () => import('@/views/SettingsView.vue');
+const JournalView = () => import('@/views/JournalView.vue');
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,6 +47,16 @@ const router = createRouter({
             component: SessionsView,
             meta: {
                 title: 'Tabletop Sessions',
+                requiresAuth: true,
+                requiresLinkedDiscord: true,
+            },
+        },
+        {
+            path: '/journal',
+            name: 'journal',
+            component: JournalView,
+            meta: {
+                title: 'Journal',
                 requiresAuth: true,
                 requiresLinkedDiscord: true,
             },

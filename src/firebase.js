@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase } from 'firebase/database';
+// import { getDatabase } from 'firebase/database'; // Replaced with getFirestore
+import { getFirestore } from 'firebase/firestore'; // Added for Firestore
 import { getAnalytics } from 'firebase/analytics';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
@@ -15,7 +16,8 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+// const db = getDatabase(app); // Realtime Database instance
+const firestore = getFirestore(app); // Firestore instance
 const analytics = getAnalytics(app);
 
 let appCheck;
@@ -34,4 +36,4 @@ if (import.meta.env.DEV) {
     });
 }
 
-export { app, db };
+export { app, firestore }; // Export firestore instead of db
