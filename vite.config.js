@@ -1,12 +1,15 @@
 import { fileURLToPath, URL } from 'node:url';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
 import { version } from './package.json';
 import fs from 'fs';
+import sass from 'sass';
 
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 
-// https://vitejs.dev/config/
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 export default defineConfig({
     plugins: [
         vue(),
@@ -25,6 +28,14 @@ export default defineConfig({
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url)),
             '~bootstrap': resolve(__dirname, 'node_modules/bootstrap'),
+        },
+    },
+    css: {
+        preprocessorOptions: {
+            scss: {
+                implementation: sass,
+                quietDeps: true,
+            },
         },
     },
     define: {
