@@ -10,7 +10,7 @@
 
     const { selectedCampaignId, arcs, selectedArcId, stages, selectedStageId, steps, selectedStepId, selectedStep, playerCampaigns } = storeToRefs(journalStore);
 
-    const { selectCampaign, addArc, addStage, addStep, updateStep, toggleStepCompletion } = journalStore;
+    const { selectCampaign, addArc, addStage, addStep, updateStep, toggleStepCompletion, updateArc, updateStage } = journalStore;
 
     const campaignName = (campaignId) => {
         const campaign = sessionsStore.campaignFromID(campaignId);
@@ -39,8 +39,21 @@
     const showAddStepForm = ref(false);
     // --- End Form models ---
 
-    // --- Edit mode toggle ---
+    // --- Edit mode toggle and item editing states ---
     const isEditing = ref(false);
+    const editingArcId = ref(null);
+    const editingArcName = ref('');
+    const editingArcDescription = ref('');
+
+    const editingStageId = ref(null);
+    const editingStageName = ref('');
+
+    const editingStepId = ref(null);
+    const editingStepName = ref('');
+    const editingStepSummary = ref('');
+    const editingStepNotes = ref('');
+    const editingStepType = ref('');
+    // --- End Edit mode toggle and item editing states ---
 
     const handleAddArc = async () => {
         if (!newArcName.value.trim() || !selectedCampaignId.value) return;
@@ -95,6 +108,70 @@
         journalStore.selectedStepId = stepId;
     };
 
+    // --- Editing functions ---
+    const startEditingArc = (arc) => {
+        editingArcId.value = arc.id;
+        editingArcName.value = arc.name;
+        editingArcDescription.value = arc.description;
+    };
+
+    const saveEditingArc = async (arcId) => {
+        if (!editingArcName.value.trim()) return;
+        await updateArc(arcId, { name: editingArcName.value, description: editingArcDescription.value });
+        cancelEditingArc();
+    };
+
+    const cancelEditingArc = () => {
+        editingArcId.value = null;
+        editingArcName.value = '';
+        editingArcDescription.value = '';
+    };
+
+    const startEditingStage = (stage) => {
+        editingStageId.value = stage.id;
+        editingStageName.value = stage.name;
+    };
+
+    const saveEditingStage = async (arcId, stageId) => {
+        if (!editingStageName.value.trim()) return;
+        await updateStage(arcId, stageId, { name: editingStageName.value });
+        cancelEditingStage();
+    };
+
+    const cancelEditingStage = () => {
+        editingStageId.value = null;
+        editingStageName.value = '';
+    };
+
+    const startEditingStep = (step) => {
+        editingStepId.value = step.id;
+        editingStepName.value = step.name;
+        editingStepSummary.value = step.summary;
+        editingStepNotes.value = step.notes;
+        editingStepType.value = step.type;
+    };
+
+    const saveEditingStep = async (arcId, stageId, stepId) => {
+        if (!editingStepName.value.trim()) return;
+        await updateStep(arcId, stageId, stepId, {
+            name: editingStepName.value,
+            summary: editingStepSummary.value,
+            notes: editingStepNotes.value,
+            type: editingStepType.value,
+            completed: editingStepType.value === 'done' ? true : false, // Update completed based on type
+        });
+        cancelEditingStep();
+    };
+
+    const cancelEditingStep = () => {
+        editingStepId.value = null;
+        editingStepName.value = '';
+        editingStepSummary.value = '';
+        editingStepNotes.value = '';
+        editingStepType.value = '';
+    };
+    // --- End Editing functions ---
+
     // Watch for playerCampaigns to be loaded and select the first one by default
     onMounted(() => {
         if (playerCampaigns.value && playerCampaigns.value.length > 0 && !selectedCampaignId.value) {
@@ -115,6 +192,13 @@
             showAddStepForm.value = false;
             isEditing.value = false; // Reset edit mode when campaign changes
         }
+    });
+
+    // Watch for selected item changes to cancel editing
+    watch([selectedArcId, selectedStageId, selectedStepId], () => {
+        cancelEditingArc();
+        cancelEditingStage();
+        cancelEditingStep();
     });
 </script>
 
@@ -153,18 +237,38 @@
                 </form>
 
                 <ul class="list-group journal-list">
-                    <li v-for="arc in arcs" :key="arc.id" class="list-group-item bg-transparent border-secondary p-0 mb-2">
-                        <div @click="selectArc(arc.id)" :class="{ 'active-arc': selectedArcId === arc.id }" class="journal-item arc-item p-2 rounded">
-                            <strong class="text-warning">{{ arc.name }}</strong>
-                            <p v-if="arc.description" class="text-white-50 small mb-0">{{ arc.description }}</p>
+                    <li v-for="arc in arcs" :key="arc.id" class="list-group-item bg-transparent border-0 p-0 mb-2 journal-tree-item arc-item">
+                        <div class="d-flex align-items-center">
+                            <div @click="selectArc(arc.id)" :class="{ 'active-arc': selectedArcId === arc.id }" class="journal-item p-2 rounded flex-grow-1">
+                                <strong class="text-warning">{{ arc.name }}</strong>
+                                <p v-if="arc.description" class="text-white-50 small mb-0">{{ arc.description }}</p>
+                            </div>
+                            <div v-if="isEditing" class="ms-2">
+                                <button v-if="editingArcId !== arc.id" class="btn btn-xs btn-secondary" @click.stop="startEditingArc(arc)" title="Edit Arc">...</button>
+                                <template v-else>
+                                    <button class="btn btn-xs btn-success me-1" @click.stop="saveEditingArc(arc.id)" title="Save">✓</button>
+                                    <button class="btn btn-xs btn-danger" @click.stop="cancelEditingArc()" title="Cancel">✗</button>
+                                </template>
+                            </div>
                         </div>
+
+                        <form v-if="isEditing && editingArcId === arc.id" @submit.prevent="saveEditingArc(arc.id)" class="mb-2 p-2 bg-dark-tle rounded mt-2">
+                            <div class="mb-2">
+                                <input type="text" v-model="editingArcName" placeholder="Arc Name" class="form-control form-control-sm bg-secondary text-white border-dark" required />
+                            </div>
+                            <div class="mb-2">
+                                <textarea v-model="editingArcDescription" placeholder="Arc Description (short)" class="form-control form-control-sm bg-secondary text-white border-dark" rows="2"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-primary">Save Changes</button>
+                        </form>
 
                         <div v-if="selectedArcId === arc.id" class="ps-3 pt-1">
                             <div v-if="isEditing" class="d-flex justify-content-between align-items-center my-1">
                                 <h6 class="text-info small mb-0 ms-1">Stages</h6>
-                                <button v-if="isEditing" class="btn btn-xs btn-info py-0 px-1" @click.stop="showAddStageForm = !showAddStageForm" title="Add New Stage">+</button>
+                                <button class="btn btn-xs btn-info py-0 px-1" @click.stop="showAddStageForm = !showAddStageForm" title="Add New Stage">+</button>
                             </div>
 
+                            <!-- Moved Add Stage form outside the stages loop -->
                             <form v-if="isEditing && showAddStageForm" @submit.prevent="handleAddStage" class="mb-2 p-2 bg-dark-tle rounded ms-1">
                                 <div class="mb-1">
                                     <input type="text" v-model="newStageName" placeholder="Stage Name" class="form-control form-control-sm bg-secondary text-white border-dark" required />
@@ -173,17 +277,34 @@
                             </form>
 
                             <ul class="list-group journal-list">
-                                <li v-for="stage in stages" :key="stage.id" class="list-group-item bg-transparent border-0 p-0 mb-1">
-                                    <div @click.stop="selectStage(stage.id)" :class="{ 'active-stage': selectedStageId === stage.id }" class="journal-item stage-item p-2 rounded ms-1">
-                                        <span class="text-info">{{ stage.name }}</span>
+                                <li v-for="stage in stages" :key="stage.id" class="list-group-item bg-transparent border-0 p-0 mb-1 journal-tree-item stage-item">
+                                    <div class="d-flex align-items-center">
+                                        <div @click.stop="selectStage(stage.id)" :class="{ 'active-stage': selectedStageId === stage.id }" class="journal-item p-2 rounded ms-1 flex-grow-1">
+                                            <span class="text-info">{{ stage.name }}</span>
+                                        </div>
+                                        <div v-if="isEditing" class="ms-2">
+                                            <button v-if="editingStageId !== stage.id" class="btn btn-xs btn-secondary" @click.stop="startEditingStage(stage)" title="Edit Stage">...</button>
+                                            <template v-else>
+                                                <button class="btn btn-xs btn-success me-1" @click.stop="saveEditingStage(arc.id, stage.id)" title="Save">✓</button>
+                                                <button class="btn btn-xs btn-danger" @click.stop="cancelEditingStage()" title="Cancel">✗</button>
+                                            </template>
+                                        </div>
                                     </div>
+
+                                    <form v-if="isEditing && editingStageId === stage.id" @submit.prevent="saveEditingStage(arc.id, stage.id)" class="mb-2 p-2 bg-dark-tle rounded ms-1 mt-2">
+                                        <div class="mb-1">
+                                            <input type="text" v-model="editingStageName" placeholder="Stage Name" class="form-control form-control-sm bg-secondary text-white border-dark" required />
+                                        </div>
+                                        <button type="submit" class="btn btn-xs btn-primary">Save Changes</button>
+                                    </form>
 
                                     <div v-if="selectedStageId === stage.id" class="ps-3 pt-1">
                                         <div v-if="isEditing" class="d-flex justify-content-between align-items-center my-1">
                                             <h6 class="text-success small mb-0 ms-2">Steps</h6>
-                                            <button v-if="isEditing" class="btn btn-xs btn-success py-0 px-1" @click.stop="showAddStepForm = !showAddStepForm" title="Add New Step">+</button>
+                                            <button class="btn btn-xs btn-success py-0 px-1" @click.stop="showAddStepForm = !showAddStepForm" title="Add New Step">+</button>
                                         </div>
 
+                                        <!-- Moved Add Step form outside the steps loop -->
                                         <form v-if="isEditing && showAddStepForm" @submit.prevent="handleAddStep" class="mb-2 p-2 bg-dark-tle rounded ms-2">
                                             <div class="mb-1">
                                                 <input type="text" v-model="newStepName" placeholder="Step Name" class="form-control form-control-sm bg-secondary text-white border-dark" required />
@@ -204,12 +325,49 @@
                                         </form>
 
                                         <ul class="list-group journal-list">
-                                            <li v-for="step in steps" :key="step.id" class="list-group-item bg-transparent border-0 p-0">
-                                                <div @click.stop="selectStep(step.id)" :class="{ 'active-step': selectedStepId === step.id }" class="journal-item step-item p-2 rounded ms-2 d-flex align-items-center">
-                                                    <input v-if="step.type === 'planned'" type="checkbox" :checked="step.completed" @change.stop="handleToggleStep(step)" class="form-check-input me-2 bg-dark border-secondary" />
-                                                    <span :class="{ 'text-decoration-line-through text-muted': step.completed, 'text-success': step.type !== 'planned' || step.completed }">{{ step.name }}</span>
+                                            <li v-for="step in steps" :key="step.id" class="list-group-item bg-transparent border-0 p-0 journal-tree-item step-item">
+                                                <div class="d-flex align-items-center">
+                                                    <div @click.stop="selectStep(step.id)" :class="{ 'active-step': selectedStepId === step.id }" class="journal-item p-2 rounded ms-2 d-flex align-items-center flex-grow-1">
+                                                        <div class="step-checkbox-container me-2">
+                                                            <span v-if="step.completed" class="big-checkmark">✓</span>
+                                                            <span v-else>&nbsp;</span>
+                                                            <!-- Placeholder for alignment when not complete -->
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <span :class="{ 'text-decoration-line-through text-muted': step.completed, 'text-success': step.type !== 'planned' || step.completed }">{{ step.name }}</span>
+                                                            <p v-if="step.summary && editingStepId !== step.id" class="text-white-50 small mb-0 mt-1">{{ step.summary }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div v-if="isEditing" class="ms-2">
+                                                        <button v-if="editingStepId !== step.id" class="btn btn-xs btn-secondary" @click.stop="startEditingStep(step)" title="Edit Step">...</button>
+                                                        <template v-else>
+                                                            <button class="btn btn-xs btn-success me-1" @click.stop="saveEditingStep(arc.id, stage.id, step.id)" title="Save">✓</button>
+                                                            <button class="btn btn-xs btn-danger" @click.stop="cancelEditingStep()" title="Cancel">✗</button>
+                                                        </template>
+                                                    </div>
                                                 </div>
-                                                <p v-if="selectedStepId === step.id && step.summary" class="text-white-50 small mb-0 ms-4 ps-2">{{ step.summary }}</p>
+
+                                                <form v-if="isEditing && editingStepId === step.id" @submit.prevent="saveEditingStep(arc.id, stage.id, step.id)" class="mb-2 p-2 bg-dark-tle rounded ms-2 mt-2">
+                                                    <div class="mb-1">
+                                                        <input type="text" v-model="editingStepName" placeholder="Step Name" class="form-control form-control-sm bg-secondary text-white border-dark" required />
+                                                    </div>
+                                                    <div class="mb-1">
+                                                        <input type="text" v-model="editingStepSummary" placeholder="Step Summary (optional)" class="form-control form-control-sm bg-secondary text-white border-dark" />
+                                                    </div>
+                                                    <div class="mb-1">
+                                                        <textarea v-model="editingStepNotes" placeholder="Full Notes (Markdown supported)" class="form-control form-control-sm bg-secondary text-white border-dark" rows="3"></textarea>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <select v-model="editingStepType" class="form-select form-select-sm bg-secondary text-white border-dark">
+                                                            <option value="planned">Planned</option>
+                                                            <option value="done">Done</option>
+                                                        </select>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-xs btn-primary">Save Changes</button>
+                                                </form>
+
+                                                <!-- The following p tag for summary is now handled within the journal-item div above -->
+                                                <!-- <p v-if="selectedStepId === step.id && step.summary && editingStepId !== step.id" class="text-white-50 small mb-0 ms-4 ps-2">{{ step.summary }}</p> -->
                                             </li>
                                         </ul>
                                     </div>
@@ -225,12 +383,19 @@
             <div class="col-md-8 journal-details-pane">
                 <div v-if="selectedStep" class="p-3 bg-dark-tle rounded h-100">
                     <h3 class="text-white border-bottom border-secondary pb-2 mb-3">{{ selectedStep.name }}</h3>
+
                     <div v-if="selectedStep.summary" class="mb-3">
                         <h5 class="text-white-75">Summary</h5>
                         <p class="text-white-50">{{ selectedStep.summary }}</p>
                     </div>
                     <h5 class="text-white-75">Notes</h5>
                     <div class="markdown-content text-white-50" v-html="renderedNotes"></div>
+
+                    <!-- Buttons for toggling completion status -->
+                    <div class="mb-3">
+                        <button v-if="!selectedStep.completed && !(isEditing && editingStepId === selectedStep.id)" @click="toggleStepCompletion(selectedArcId, selectedStageId, selectedStep.id, true)" class="btn btn-success me-2">Mark Task as Complete</button>
+                        <button v-if="selectedStep.completed && isEditing && editingStepId !== selectedStep.id" @click="toggleStepCompletion(selectedArcId, selectedStageId, selectedStep.id, false)" class="btn btn-warning me-2">Mark Task as Incomplete</button>
+                    </div>
                 </div>
                 <div v-else class="d-flex align-items-center justify-content-center h-100 text-white-50">
                     <p>Select a step to see its details.</p>
@@ -255,7 +420,7 @@
     .journal-tree-pane {
         background-color: #212529; /* Dark background for the tree */
         padding: 15px;
-        border-right: 1px solid #495057;
+        /* border-right: 1px solid #495057; */ /* Border is removed as requested */
         overflow-y: auto;
         max-height: calc(100vh - 200px);
     }
@@ -273,12 +438,60 @@
 
     .journal-list {
         padding-left: 0;
+        list-style: none; /* Remove default list styling */
+    }
+
+    .journal-tree-item {
+        position: relative; /* Needed for pseudo-elements */
+    }
+
+    /* Structural lines */
+    .journal-tree-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background-color: #495057; /* Color of the lines */
+    }
+
+    .arc-item > .d-flex > .journal-item::before {
+        content: '';
+        position: absolute;
+        left: -15px; /* Adjust to align with parent */
+        top: 20px; /* Adjust to align with text */
+        width: 15px;
+        height: 1px;
+        background-color: #495057;
+    }
+
+    .stage-item > .d-flex > .journal-item::before {
+        content: '';
+        position: absolute;
+        left: -15px; /* Adjust to align with parent */
+        top: 20px; /* Adjust to align with text */
+        width: 15px;
+        height: 1px;
+        background-color: #495057;
+    }
+
+    .step-item > .d-flex > .journal-item::before {
+        content: '';
+        position: absolute;
+        left: -15px; /* Adjust to align with parent */
+        top: 20px; /* Adjust to align with text */
+        width: 15px;
+        height: 1px;
+        background-color: #495057;
     }
 
     .journal-item {
         cursor: pointer;
         transition: background-color 0.2s ease-in-out;
         border: 1px solid transparent; /* for hover/active states */
+        position: relative; /* Needed for z-index */
+        z-index: 1; /* Ensure item is above lines */
     }
 
     .journal-item:hover {
@@ -293,25 +506,31 @@
     .active-stage,
     .active-step {
         background-color: #007bff40 !important; /* Bootstrap primary with alpha */
-        border-left: 3px solid #007bff;
+        /* border-left: 3px solid #007bff; */ /* Removed border */
+        outline: 3px solid #007bff; /* Use outline instead of border */
+        outline-offset: -3px; /* Draw outline inside the element */
     }
 
     .active-arc {
-        border-left-color: #ffc107; /* Warning color for active arc */
+        /* border-left-color: #ffc107; */ /* Removed border */
+        outline-color: #ffc107; /* Warning color for active arc */
     }
     .active-arc .text-warning {
         color: #ffdd70 !important;
     }
 
     .active-stage {
-        border-left-color: #17a2b8; /* Info color for active stage */
+        /* border-left-color: #17a2b8; */ /* Removed border */
+        outline-color: #17a2b8; /* Info color for active stage */
     }
     .active-stage .text-info {
         color: #4fcedf !important;
     }
 
     .active-step {
-        border-left-color: #28a745; /* Success color for active step */
+        /* border-left-color: #28a745; */ /* Removed border */
+        outline: 3px solid #28a745; /* Success color for active step */
+        /* outline-offset: -3px; */ /* Adjusted for potentially better visual, can be removed if not preferred */
     }
     .active-step .text-success {
         color: #63d880 !important;
@@ -381,5 +600,42 @@
     .form-check-input:checked.bg-dark {
         background-color: #28a745; /* success */
         border-color: #28a745;
+    }
+
+    .step-checkbox-container {
+        width: 20px; /* Fixed width for checkbox/checkmark container */
+        min-width: 20px; /* Ensure it doesn't shrink */
+        height: 24px; /* Match typical input height for alignment */
+        flex-shrink: 0; /* Prevent shrinking */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2em; /* Default size for the content (checkmark or space) */
+    }
+
+    .big-checkmark {
+        font-size: 1.5em; /* Larger size for the checkmark */
+        color: #28a745; /* Bootstrap success green */
+        font-weight: bold;
+        line-height: 1; /* Ensure it aligns well within the container */
+    }
+
+    .journal-item .flex-grow-1 {
+        /* Container for step name and summary */
+        flex-grow: 1;
+        overflow: hidden;
+    }
+
+    .journal-item .flex-grow-1 span {
+        display: block; /* Name on its own line */
+    }
+
+    .journal-item .flex-grow-1 p {
+        /* Styling for the summary paragraph */
+        margin-top: 0.25rem;
+        margin-left: 0;
+        padding-left: 0;
+        line-height: 1.2; /* Adjust line height for small text */
+        white-space: normal; /* Allow summary to wrap */
     }
 </style>
